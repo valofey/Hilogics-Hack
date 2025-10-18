@@ -26,6 +26,8 @@ def create_report(
 
     source = load_source_data()
 
+    country_by_code = {c.code: c for c in source.countries}
+
     # 3. Extract tariffs from restrictions
     current_duty = 0.0
     wto_duty = 0.0
@@ -91,15 +93,19 @@ def create_report(
         # Geography: shares
         if total_vol > 0:
             for imp in latest_imports:
+                country_info = country_by_code.get(imp.country)
+                country_name = country_info.name if country_info else f"[{imp.country}]"
                 geography.append(
                     ImportStructureItem(
-                        country=imp.country, share_percent=imp.volume / total_vol
+                        country=country_name, share_percent=imp.volume / total_vol
                     )
                 )
         # Prices: absolute values (assuming volume = price in millions USD)
         for imp in latest_imports:
+            country_info = country_by_code.get(imp.country)
+            country_name = country_info.name if country_info else f"[{imp.country}]"
             price_usd = int(round(imp.volume * 1e6))
-            prices.append(ContractPriceItem(country=imp.country, price_usd=price_usd))
+            prices.append(ContractPriceItem(country=country_name, price_usd=price_usd))
 
     # 6. Recommendations: not available → empty list
     recommendations: List[Recommendation] = []
