@@ -1,3 +1,5 @@
+from typing import List
+from schemas.dashboard_schemas import TnvedItem
 from config import settings
 from models.dashboard import (
     DashboardData,
@@ -23,6 +25,18 @@ def retrieve_report(uid: int):
     )
     res.share_url = generate_share_url(uid)
     return res
+
+
+def get_tnved_list_service() -> List[TnvedItem]:
+    from schemas.dashboard_schemas import TnvedItem
+
+    return [
+        TnvedItem(code="8472.90.100.00", description="Банкоматы"),
+        TnvedItem(code="8517.12.000.00", description="Смартфоны"),
+        TnvedItem(code="8422.11.000.00", description="Пищевые автоматы"),
+        TnvedItem(code="8471.30.000.00", description="Ноутбуки"),
+        TnvedItem(code="8205.51.000.00", description="Инструменты ручные"),
+    ]
 
 
 def create_report(
