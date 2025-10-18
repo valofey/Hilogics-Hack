@@ -12,7 +12,7 @@ from models.dashboard import (
 
 
 def generate_share_url(uid: int):
-    return f"{settings.base_url}/share/{uid}"
+    return f"{settings.ui_base_url}/share/{uid}"
 
 
 def retrieve_report(uid: int):
