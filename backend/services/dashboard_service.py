@@ -15,6 +15,7 @@ from models.dashboard import (
     ContractPriceItem,
 )
 from models.dashboard import Recommendation, CaseStudy, ImpactMeasure
+from services.recommendation_service import RecommendationService, Measure
 import csv
 from pathlib import Path
 
@@ -107,8 +108,23 @@ def create_report(
             price_usd = int(round(imp.volume * 1e6))
             prices.append(ContractPriceItem(country=country_name, price_usd=price_usd))
 
-    # 6. Recommendations: not available → empty list
+    recommendation_service = RecommendationService(source)
+    recommended_measures = recommendation_service.recommend(hs_code)
+
     recommendations: List[Recommendation] = []
+    for code in recommended_measures:
+        try:
+            measure = Measure(code)
+            name = measure.description
+        except ValueError:
+            name = f"Мера поддержки {code}"
+        recommendations.append(
+            Recommendation(
+                name=name,
+                reasons=[],
+                similar_cases=[],
+            )
+        )
 
     # 7. Share URL
     share_url = generate_share_url(424242)
