@@ -1,0 +1,16 @@
+hs_code,key,value
+842810,customs_duty_rate,0
+842810,customs_duty_rate_wto,0.05
+842810,tech_regulations_present,True
+842810,rf_decree_1875_present,True
+842810,order_4114_present,False
+330300,customs_duty_rate,0.065
+330300,customs_duty_rate_wto,0.065
+330300,tech_regulations_present,False
+330300,rf_decree_1875_present,False
+330300,order_4114_present,False
+847290,customs_duty_rate,0
+847290,customs_duty_rate_wto,0
+847290,tech_regulations_present,False
+847290,rf_decree_1875_present,False
+847290,order_4114_present,False
