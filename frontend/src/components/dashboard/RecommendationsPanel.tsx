@@ -8,6 +8,10 @@ type RecommendationsPanelProps = {
 };
 
 export function RecommendationsPanel({ recommendations }: RecommendationsPanelProps) {
+  if (typeof recommendations[0] != "string"){
+    recommendations=["Рекомендации в разработке"]
+  }
+
   const items = recommendations.length ? recommendations : ['Рекомендации не сформированы'];
 
   return (
