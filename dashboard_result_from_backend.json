@@ -1,0 +1,58 @@
+{
+  "dashboard_data": {
+    "product": {
+      "name": "Банкоматы",
+      "code": "8472.90.100.00"
+    },
+    "tariffs": {
+      "current": 0.15,
+      "wto_obligation": 0.12
+    },
+    "metrics": {
+      "import": {
+        "history": [
+          { "year": 2022, "value": 10000, "change_percent": 0.05 },
+          { "year": 2023, "value": 10500, "change_percent": 0.03 },
+          { "year": 2024, "value": 11000, "change_percent": 0.02 }
+        ]
+      },
+      "production": {
+        "history": [
+          { "year": 2022, "value": 5000, "change_percent": -0.02 },
+          { "year": 2023, "value": 4900, "change_percent": -0.01 },
+          { "year": 2024, "value": 4800, "change_percent": 0.01 }
+        ]
+      },
+      "consumption": {
+        "history": [
+          { "year": 2022, "value": 15000, "change_percent": 0.03 },
+          { "year": 2023, "value": 15400, "change_percent": 0.02 },
+          { "year": 2024, "value": 15800, "change_percent": 0.01 }
+        ]
+      }
+    },
+    "geography": {
+      "import_structure": [
+        { "country": "Китай", "share_percent": 0.40 },
+        { "country": "Германия", "share_percent": 0.20 },
+        { "country": "Польша", "share_percent": 0.15 },
+        { "country": "Турция", "share_percent": 0.10 },
+        { "country": "Италия", "share_percent": 0.08 },
+        { "country": "Другие", "share_percent": 0.07 }
+      ]
+    },
+    "prices": {
+      "contract_price_top": [
+        { "country": "Китай", "price_usd": 20000 },
+        { "country": "Германия", "price_usd": 35000 },
+        { "country": "Польша", "price_usd": 27000 },
+        { "country": "Турция", "price_usd": 22000 },
+        { "country": "Италия", "price_usd": 30000 }
+      ]
+    },
+    "recommendations": [
+      "Мера поддержки 1",
+      "Мера поддержки 2"
+    ]
+  }
+}
