@@ -22,7 +22,7 @@ export function NextStepsCard({ onAction, loading, shareLink, organizationReady 
         </CardTitle>
         <p className="flex items-center gap-2 text-sm text-slate-600">
           <PhoneCall className="h-4 w-4 text-sky-500" />
-          Свяжитесь с экспертом MOSPROM, чтобы обсудить меры поддержки и подготовить решение.
+          Свяжитесь с экспертом MOSPROM, чтобы обсудить рекомендации и план действий.
         </p>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-4">
@@ -54,8 +54,7 @@ export function NextStepsCard({ onAction, loading, shareLink, organizationReady 
         ) : null}
 
         <p className="mt-auto text-xs text-slate-500">
-          После отправки контактных данных для организации можно повторно скачивать PDF-отчёт и мгновенно копировать
-          ссылку без повторного заполнения формы.
+          После сохранения данных организации можно повторно скачивать PDF и мгновенно копировать ссылку без заполнения формы.
         </p>
       </CardContent>
     </Card>

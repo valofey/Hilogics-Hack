@@ -190,7 +190,7 @@ export function PdfReport({ data, qrCode, generatedAt }: PdfReportProps) {
           <div className="rounded-2xl border border-slate-200 p-4">
             <h2 className="text-lg font-semibold">Карта импорта</h2>
             <p className="mt-1 text-xs text-slate-500">
-              Чем интенсивнее оттенок, тем выше доля страны в поставках. Данные за последний период отчёта.
+              Чем интенсивнее оттенок, тем выше доля страны в поставках. Отображены данные за последний доступный период.
             </p>
             <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
               <svg viewBox="0 0 360 220" className="h-[220px] w-full">
@@ -282,9 +282,9 @@ export function PdfReport({ data, qrCode, generatedAt }: PdfReportProps) {
         <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 text-sm text-slate-600">
           <p className="text-xs uppercase tracking-wide text-slate-500">Комментарии MOSPROM</p>
           <p className="mt-2 leading-relaxed">
-            Отчёт сформирован автоматически на основании данных по импорту, производству и обязательствам Российской
-            Федерации в ВТО. Для получения индивидуальных рекомендаций и согласования мер поддержки обратитесь к
-            ответственному эксперту MOSPROM.
+            Отчёт сформирован автоматически по данным об импорте, производстве и обязательствам Российской Федерации в
+            ВТО. Для получения индивидуальных рекомендаций и согласования мер поддержки обратитесь к ответственному
+            эксперту MOSPROM.
           </p>
         </section>
       </div>

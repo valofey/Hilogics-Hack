@@ -1,4 +1,4 @@
-﻿import { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { LandingHero } from "@/components/landing/LandingHero";
 import { DashboardView } from "@/components/dashboard/DashboardView";
@@ -13,7 +13,7 @@ type ProductFormValues = {
 };
 
 const fallbackOrganization: OrganizationInfo = {
-  name: "\u041e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u044f \u043d\u0435 \u0443\u043a\u0430\u0437\u0430\u043d\u0430",
+  name: "Организация не указана",
   inn: null
 };
 
@@ -36,7 +36,7 @@ function App() {
       setDashboardData(response.dashboard);
       setView("dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u0444\u043e\u0440\u043c\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043e\u0442\u0447\u0451\u0442");
+      setError(err instanceof Error ? err.message : "Не удалось сформировать отчёт");
     } finally {
       setLoading(false);
     }
@@ -80,3 +80,4 @@ function App() {
 }
 
 export default App;
+

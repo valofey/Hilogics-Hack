@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
@@ -20,10 +20,9 @@ import { WorldMapCard } from '@/components/dashboard/WorldMapCard';
 import { RecommendationsPanel } from '@/components/dashboard/RecommendationsPanel';
 import { NextStepsCard } from '@/components/dashboard/NextStepsCard';
 import { PdfReport } from '@/components/dashboard/PdfReport';
-import type { DashboardData, MetricPoint, OrganizationInfo } from '@/types/dashboard';
-import { formatPercent } from '@/lib/number';
+import type { DashboardData, OrganizationInfo } from '@/types/dashboard';
 
-const PLACEHOLDER_ORGANIZATION_NAME = 'РћСЂРіР°РЅРёР·Р°С†РёСЏ РЅРµ СѓРєР°Р·Р°РЅР°';
+const PLACEHOLDER_ORGANIZATION_NAME = 'Организация не указана';
 
 type DashboardViewProps = {
   data: DashboardData;
@@ -74,20 +73,20 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
   const metricsConfig = useMemo(
     () => [
       {
-        title: 'РРјРїРѕСЂС‚',
-        subtitle: 'Р’РЅРµС€РЅРёРµ РїРѕСЃС‚Р°РІРєРё С‚РѕРІР°СЂР°',
+        title: 'Импорт',
+        subtitle: 'Внешние поставки товара',
         data: data.metrics.import_data,
         color: { stroke: '#2563eb', fill: '#3b82f6', gradientId: 'import' }
       },
       {
-        title: 'РџСЂРѕРёР·РІРѕРґСЃС‚РІРѕ',
-        subtitle: 'Р РѕСЃСЃРёР№СЃРєРёР№ РІС‹РїСѓСЃРє',
+        title: 'Производство',
+        subtitle: 'Российский выпуск',
         data: data.metrics.production,
         color: { stroke: '#f97316', fill: '#fb923c', gradientId: 'production' }
       },
       {
-        title: 'РџРѕС‚СЂРµР±Р»РµРЅРёРµ',
-        subtitle: 'РЎРїСЂРѕСЃ РЅР° СЂС‹РЅРєРµ',
+        title: 'Потребление',
+        subtitle: 'Спрос на рынке',
         data: data.metrics.consumption,
         color: { stroke: '#14b8a6', fill: '#2dd4bf', gradientId: 'consumption' }
       }
@@ -141,15 +140,15 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
         await navigator.clipboard.writeText(link);
         setNotification({
           type: 'success',
-          message: 'РЎСЃС‹Р»РєР° СЃРєРѕРїРёСЂРѕРІР°РЅР° РІ Р±СѓС„РµСЂ РѕР±РјРµРЅР°'
+          message: 'Ссылка скопирована в буфер обмена'
         });
       } else {
-        throw new Error('РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃСЃС‹Р»РєСѓ');
+        throw new Error('Не удалось получить ссылку');
       }
     } catch (error) {
       setNotification({
         type: 'error',
-        message: error instanceof Error ? error.message : 'РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ СЃСЃС‹Р»РєСѓ'
+        message: error instanceof Error ? error.message : 'Не удалось скопировать ссылку'
       });
     }
   };
@@ -177,7 +176,7 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
     await preparePdf(dataset, generatedAt);
 
     if (!pdfRef.current) {
-      throw new Error('РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіРѕС‚РѕРІРёС‚СЊ PDF-РѕС‚С‡С‘С‚');
+      throw new Error('Не удалось подготовить PDF-отчёт');
     }
 
     await new Promise((resolve) => setTimeout(resolve, 120));
@@ -188,7 +187,6 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
     const height = (canvas.height * width) / canvas.width;
     pdf.addImage(imageData, 'PNG', 0, 0, width, height);
 
-    // If report taller than one page, add second page
     if (height > pdf.internal.pageSize.getHeight()) {
       const remainingHeight = height - pdf.internal.pageSize.getHeight();
       if (remainingHeight > 0) {
@@ -238,45 +236,22 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
       }
 
       if (shareMode === 'link') {
-        await ensureShareLinkAndCopy();
+        await ensureShareLinkAndCopy(dataset.share_url ?? null);
       } else {
         await handleGeneratePdf(dataset);
         setNotification({
           type: 'success',
-          message: 'PDF-РѕС‚С‡С‘С‚ СЃРѕС…СЂР°РЅС‘РЅ'
+          message: 'PDF-отчёт сохранён'
         });
       }
     } catch (error) {
       setNotification({
         type: 'error',
-        message: error instanceof Error ? error.message : 'РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ РґР°РЅРЅС‹Рµ РѕСЂРіР°РЅРёР·Р°С†РёРё'
+        message: error instanceof Error ? error.message : 'Не удалось обновить данные организации'
       });
     } finally {
       setLocalLoading(false);
     }
-  };
-
-  const renderMetricSummary = (points: MetricPoint[]) => {
-    if (points.length < 2) {
-      return null;
-    }
-    const latest = points[points.length - 1];
-    const previous = points[points.length - 2];
-    const delta = latest.change_percent - previous.change_percent;
-    const trendPositive = latest.change_percent >= 0;
-    return (
-      <div
-        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-          trendPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
-        }`}
-      >
-        {trendPositive ? 'Р РѕСЃС‚' : 'РЎРЅРёР¶РµРЅРёРµ'} {formatPercent(Math.abs(latest.change_percent))}
-        <span className="font-normal text-slate-500">
-          РїСЂРѕС‚РёРІ {formatPercent(previous.change_percent)} РїРµСЂРёРѕРґРѕРј СЂР°РЅРµРµ
-        </span>
-        <span className="hidden text-slate-400 sm:inline">({delta >= 0 ? '+' : '-'}{formatPercent(Math.abs(delta))})</span>
-      </div>
-    );
   };
 
   return (
@@ -287,34 +262,32 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
             <div className="space-y-3">
               <Button variant="ghost" size="sm" className="h-9 w-fit gap-2 border border-slate-200" onClick={onReset}>
                 <ArrowLeft className="h-4 w-4" />
-                РќРѕРІС‹Р№ РѕС‚С‡С‘С‚
+                Новый отчёт
               </Button>
               <div>
-                <p className="text-sm text-sky-600">РђРЅР°Р»РёС‚РёС‡РµСЃРєРёР№ РѕС‚С‡С‘С‚ MOSPROM</p>
+                <p className="text-sm text-sky-600">Аналитический отчёт MOSPROM</p>
                 <h1 className="mt-2 text-3xl font-semibold text-slate-900 sm:text-4xl">{data.product.name}</h1>
               </div>
               <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                 <span className="rounded-full bg-sky-100 px-3 py-1 font-medium text-sky-700">
-                  РљРѕРґ РўРќ Р’Р­Р” В· {data.product.code}
+                  Код ТН ВЭД · {data.product.code}
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1">
                   <CalendarClock className="h-4 w-4 text-slate-500" />
-                  РћР±РЅРѕРІР»РµРЅРѕ {formattedTimestamp}
+                  Обновлено {formattedTimestamp}
                 </span>
               </div>
               <p className="max-w-2xl text-sm text-slate-600">
-                Р’ РѕС‚С‡С‘С‚ РІС…РѕРґСЏС‚ РґРёРЅР°РјРёРєР° РёРјРїРѕСЂС‚Р°, РїСЂРѕРёР·РІРѕРґСЃС‚РІР° Рё РїРѕС‚СЂРµР±Р»РµРЅРёСЏ, СЃСЂР°РІРЅРµРЅРёРµ С‚Р°СЂРёС„РѕРІ, РіРµРѕРіСЂР°С„РёСЏ РїРѕСЃС‚Р°РІРѕРє Рё
-                СЂРµРєРѕРјРµРЅРґСѓРµРјС‹Рµ РјРµСЂС‹ РїРѕРґРґРµСЂР¶РєРё.
+                В отчёт входят динамика импорта, производства и потребления, сравнение тарифов, география поставок и
+                рекомендуемые меры поддержки.
               </p>
             </div>
 
             {organizationIsProvided ? (
               <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 text-left shadow-sm">
-                <p className="text-xs uppercase tracking-wide text-slate-500">РћСЂРіР°РЅРёР·Р°С†РёСЏ</p>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Организация</p>
                 <p className="mt-2 text-base font-semibold text-slate-900">{organization.name}</p>
-                {organization.inn ? (
-                  <p className="text-xs text-slate-500">РРќРќ: {organization.inn}</p>
-                ) : null}
+                {organization.inn ? <p className="text-xs text-slate-500">ИНН: {organization.inn}</p> : null}
               </div>
             ) : null}
           </div>
@@ -329,7 +302,6 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
               data={metric.data}
               color={metric.color}
               domain={globalMetricDomain}
-              footer={renderMetricSummary(metric.data)}
             />
           ))}
           <TariffCard tariffs={data.tariffs} />
@@ -353,18 +325,18 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>РљРѕРЅС‚Р°РєС‚РЅС‹Рµ РґР°РЅРЅС‹Рµ РѕСЂРіР°РЅРёР·Р°С†РёРё</DialogTitle>
+            <DialogTitle>Контактные данные организации</DialogTitle>
             <DialogDescription>
-              РЈРєР°Р¶РёС‚Рµ РЅР°РёРјРµРЅРѕРІР°РЅРёРµ Рё РРќРќ, С‡С‚РѕР±С‹ РїРµСЂРµРґР°С‚СЊ РѕС‚С‡С‘С‚ СЌРєСЃРїРµСЂС‚Сѓ MOSPROM Рё Р°РєС‚РёРІРёСЂРѕРІР°С‚СЊ СЌРєСЃРїРѕСЂС‚ PDF РёР»Рё СЃСЃС‹Р»РєСѓ.
+              Укажите актуальное наименование и ИНН, чтобы поделиться отчётом с экспертом MOSPROM.
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleSubmitOrganization}>
             <div className="space-y-2">
-              <Label htmlFor="org-name">РћСЂРіР°РЅРёР·Р°С†РёСЏ</Label>
+              <Label htmlFor="org-name">Организация</Label>
               <Input
                 id="org-name"
+                placeholder="АО «Компания»"
                 value={organization.name === PLACEHOLDER_ORGANIZATION_NAME ? '' : organization.name}
-                placeholder="РђРћ В«РљРѕРјРїР°РЅРёСЏВ»"
                 onChange={(event) =>
                   setOrganization((prev) => ({
                     ...prev,
@@ -375,11 +347,11 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="org-inn">РРќРќ (РїСЂРё РЅР°Р»РёС‡РёРё)</Label>
+              <Label htmlFor="org-inn">ИНН (при наличии)</Label>
               <Input
                 id="org-inn"
-                value={organization.inn ?? ''}
                 placeholder="1234567890"
+                value={organization.inn ?? ''}
                 onChange={(event) =>
                   setOrganization((prev) => ({
                     ...prev,
@@ -394,7 +366,7 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
               disabled={localLoading}
             >
               {localLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              РЎРѕС…СЂР°РЅРёС‚СЊ Рё РїСЂРѕРґРѕР»Р¶РёС‚СЊ
+              Сохранить и продолжить
             </Button>
           </form>
         </DialogContent>
@@ -427,4 +399,3 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
     </div>
   );
 }
-

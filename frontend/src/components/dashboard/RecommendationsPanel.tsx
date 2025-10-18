@@ -8,7 +8,7 @@ type RecommendationsPanelProps = {
 };
 
 export function RecommendationsPanel({ recommendations }: RecommendationsPanelProps) {
-  const items = recommendations.length ? recommendations : ['Меры не предложены'];
+  const items = recommendations.length ? recommendations : ['Рекомендации не сформированы'];
 
   return (
     <Card className="border border-slate-200 bg-white shadow-lg">
@@ -18,7 +18,7 @@ export function RecommendationsPanel({ recommendations }: RecommendationsPanelPr
           Возможные меры поддержки
         </CardTitle>
         <p className="text-sm text-slate-600">
-          Отбор основан на динамике рынка, структуре импорта и соотношении текущей ставки с обязательствами России в ВТО.
+          Перечень мер сформирован автоматически по результатам анализа тарифов, динамики рынка и структуры импорта.
         </p>
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-2">
@@ -29,7 +29,7 @@ export function RecommendationsPanel({ recommendations }: RecommendationsPanelPr
           return (
             <div
               key={`${recommendation}-${index}`}
-              className="h-full rounded-2xl border border-slate-200 bg-slate-50/60 p-4 transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-sky-50/60 hover:shadow-md"
+              className="h-full rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-sky-50/70 hover:shadow-md"
             >
               <div className="flex items-start gap-3">
                 <div className="mt-1 rounded-full bg-sky-100 p-2 text-sky-600">

@@ -16,15 +16,8 @@ export function TariffCard({ tariffs, className }: TariffCardProps) {
   const isAbove = delta >= 0;
 
   return (
-    <Card
-      className={cn(
-        'relative flex h-full flex-col overflow-hidden border border-slate-200 bg-white p-6 shadow-lg',
-        className
-      )}
-    >
-      <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-sky-100/70 blur-2xl" />
-      <div className="absolute -bottom-12 left-6 h-40 w-40 rounded-full bg-sky-200/50 blur-3xl" />
-      <div className="relative z-10 flex items-start justify-between">
+    <Card className={cn('relative flex h-full flex-col gap-6 border border-slate-200 bg-white p-6 shadow-lg', className)}>
+      <div className="flex items-start justify-between">
         <div className="space-y-4">
           <Badge className="bg-sky-100 text-sky-700">Тарифное регулирование</Badge>
           <div>
@@ -42,7 +35,7 @@ export function TariffCard({ tariffs, className }: TariffCardProps) {
         </div>
       </div>
 
-      <div className="relative z-10 mt-6 space-y-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-wide text-slate-500">Обязательство ВТО</p>
@@ -61,11 +54,11 @@ export function TariffCard({ tariffs, className }: TariffCardProps) {
           </div>
         </div>
         <p className="text-sm text-slate-600">
-          Отклонение от международного обязательства составляет{' '}
+          Разница между действующей ставкой и международным обязательством составляет{' '}
           <span className="font-semibold text-slate-900">
             {formatPercent(Math.abs(delta), { maximumFractionDigits: 1 })}
           </span>
-          . Следует учесть это при выборе мер поддержки.
+          . Используйте это значение при выборе мер поддержки.
         </p>
       </div>
     </Card>
