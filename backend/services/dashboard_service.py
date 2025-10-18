@@ -12,6 +12,8 @@ from models.dashboard import (
     ContractPriceItem,
 )
 from models.dashboard import Recommendation, CaseStudy, ImpactMeasure
+import csv
+from pathlib import Path
 
 
 def generate_share_url(uid: int):
@@ -28,15 +30,13 @@ def retrieve_report(uid: int):
 
 
 def get_tnved_list_service() -> List[TnvedItem]:
-    from schemas.dashboard_schemas import TnvedItem
-
-    return [
-        TnvedItem(code="8472.90.100.00", description="Банкоматы"),
-        TnvedItem(code="8517.12.000.00", description="Смартфоны"),
-        TnvedItem(code="8422.11.000.00", description="Пищевые автоматы"),
-        TnvedItem(code="8471.30.000.00", description="Ноутбуки"),
-        TnvedItem(code="8205.51.000.00", description="Инструменты ручные"),
-    ]
+    tnved_file_path = Path("data/tnved.csv")
+    items = []
+    with open(tnved_file_path, mode='r', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            items.append(TnvedItem(code=row["code"], description=row["description"]))
+    return items
 
 
 def create_report(
