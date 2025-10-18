@@ -9,6 +9,7 @@ from models.dashboard import (
     ImportStructureItem,
     ContractPriceItem,
 )
+from models.dashboard import Recommendation, CaseStudy, ImpactMeasure
 
 
 def generate_share_url(uid: int):
@@ -27,6 +28,46 @@ def retrieve_report(uid: int):
 def create_report(
     product: ProductInfo, organization: OrganizationInfo
 ) -> DashboardData:
+
+    case1 = CaseStudy(
+        description="Применение специальной пошлины на импорт стиральных машин в 2021 году",
+        case_url="https://example.com/case/1",
+        impact=[
+            ImpactMeasure(measure="Импорт", before=100000, after=85000),
+            ImpactMeasure(measure="Внутреннее производство", before=45000, after=52000),
+            ImpactMeasure(
+                measure="Внутреннее потребление", before=145000, after=137000
+            ),
+        ],
+    )
+
+    rec1 = Recommendation(
+        name="Мера поддержки 1",
+        reasons=["Высокий уровень импорта", "Снижение внутреннего производства"],
+        similar_cases=[case1],
+    )
+
+    case2 = CaseStudy(
+        description="Введение квоты на импорт холодильников в 2019 году",
+        case_url="https://example.com/case/2",
+        impact=[
+            ImpactMeasure(measure="Импорт", before=200000, after=160000),
+            ImpactMeasure(measure="Внутреннее производство", before=80000, after=95000),
+            ImpactMeasure(
+                measure="Внутреннее потребление", before=280000, after=255000
+            ),
+        ],
+    )
+
+    rec2 = Recommendation(
+        name="Мера поддержки 2",
+        reasons=[
+            "Низкая конкурентоспособность отечественного производителя",
+            "Необходимость защиты внутреннего рынка",
+        ],
+        similar_cases=[case2],
+    )
+
     return DashboardData(
         share_url=generate_share_url(424242),
         product=product,
@@ -64,5 +105,5 @@ def create_report(
             ContractPriceItem(country="Турция", price_usd=22000),
             ContractPriceItem(country="Италия", price_usd=30000),
         ],
-        recommendations=["Мера поддержки 1", "Мера поддержки 2"],
+        recommendations=[rec1, rec2],
     )

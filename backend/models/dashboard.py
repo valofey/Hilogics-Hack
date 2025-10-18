@@ -39,6 +39,24 @@ class ContractPriceItem(BaseModel):
     price_usd: int
 
 
+class ImpactMeasure(BaseModel):
+    measure: str
+    before: int
+    after: int
+
+
+class CaseStudy(BaseModel):
+    description: str
+    case_url: str
+    impact: List[ImpactMeasure]
+
+
+class Recommendation(BaseModel):
+    name: str
+    reasons: List[str]
+    similar_cases: List[CaseStudy]
+
+
 class DashboardData(BaseModel):
     product: ProductInfo
     organization: OrganizationInfo
@@ -46,5 +64,5 @@ class DashboardData(BaseModel):
     metrics: Metrics
     geography: List[ImportStructureItem]
     prices: List[ContractPriceItem]
-    recommendations: List[str]
+    recommendations: List[Recommendation]
     share_url: str
