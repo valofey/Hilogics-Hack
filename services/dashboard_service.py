@@ -90,7 +90,7 @@ def create_report(
     if imports:
         latest_year = max(imp.year for imp in imports)
         latest_imports = [imp for imp in imports if imp.year == latest_year]
-        total_vol = sum(imp.value for imp in latest_imports)
+        total_vol = sum(imp.volume for imp in latest_imports)
         # Geography: shares
         if total_vol > 0:
             for imp in latest_imports:
@@ -98,14 +98,14 @@ def create_report(
                 country_name = country_info.name if country_info else f"[{imp.country}]"
                 geography.append(
                     ImportStructureItem(
-                        country=country_name, share_percent=imp.value / total_vol
+                        country=country_name, share_percent=imp.volume / total_vol
                     )
                 )
         # Prices: absolute values (assuming volume = price in millions USD)
         for imp in latest_imports:
             country_info = country_by_code.get(imp.country)
             country_name = country_info.name if country_info else f"[{imp.country}]"
-            price_usd = int(round(imp.value * 1e6))
+            price_usd = int(round(imp.volume * 1e6))
             prices.append(ContractPriceItem(country=country_name, price_usd=price_usd))
 
     recommendation_service = RecommendationService(source)

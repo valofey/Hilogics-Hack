@@ -13,8 +13,7 @@ class ImportByCountry(BaseModel):
     hs_code: str
     country: str # 2 letter code
     year: int
-    value: float  # monetary value (e.g. million USD)
-    quantity: float = 0.0  # physical volume (e.g. tonnes)
+    volume: float
 
 
 class VolumeGeneral(BaseModel):
