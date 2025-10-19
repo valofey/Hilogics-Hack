@@ -117,7 +117,10 @@ def create_report(
             price_usd = int(round(imp.volume * 1e6))
             prices.append(
                 ContractPriceItem(
-                    country=country_name, country_code=imp.country, price_usd=price_usd
+                    country=country_name,
+                    country_code=imp.country,
+                    price_usd=price_usd,
+                    quantity=imp.quantity,
                 )
             )
 

@@ -39,6 +39,7 @@ class ContractPriceItem(BaseModel):
     country: str
     country_code: str
     price_usd: int
+    quantity: float
 
 
 class ImpactMeasure(BaseModel):
