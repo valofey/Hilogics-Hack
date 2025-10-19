@@ -31,11 +31,13 @@ class Metrics(BaseModel):
 
 class ImportStructureItem(BaseModel):
     country: str
+    country_code: str
     share_percent: float
 
 
 class ContractPriceItem(BaseModel):
     country: str
+    country_code: str
     price_usd: int
 
 

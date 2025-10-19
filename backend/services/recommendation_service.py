@@ -3,7 +3,6 @@ from enum import IntEnum
 from typing import Dict, List, Optional, Tuple
 
 from models.source import SourceData
-from services.recommendation_utils import calc_share, load_quantity_map
 
 
 class Measure(IntEnum):
@@ -27,6 +26,8 @@ _MEASURE_DESCRIPTIONS: Dict[Measure, str] = {
     Measure.MEASURE_5: "Мера 5: Введение обязательной сертификации",
     Measure.MEASURE_6: "Мера 6: Дополнительные меры не требуются",
 }
+
+_RELATIVE_SHARE_EPSILON = 0.02
 
 
 @dataclass
@@ -119,7 +120,9 @@ class ProductionConsumptionData:
             return False
         return self.production < self.production_previous
 
-    def is_production_declining_multi(self, current_year: int, window: int = 3) -> Optional[bool]:
+    def is_production_declining_multi(
+        self, current_year: int, window: int = 3
+    ) -> Optional[bool]:
         previous_years = sorted(
             year for year in self.production_history if year < current_year
         )
@@ -127,7 +130,7 @@ class ProductionConsumptionData:
             return None
         previous_years = previous_years[-window:]
         values = [
-            self.production_history.get(year)
+            self.production_history.get(year, 0)
             for year in previous_years
             if self.production_history.get(year) is not None
         ]
@@ -154,6 +157,10 @@ class NonTariffData:
     in_minpromtorg_exception_list: bool
 
 
+def relative_change(new_value: int | float, old_value: int | float):
+    return 0.0 if not old_value else (new_value - old_value) / float(old_value)
+
+
 @dataclass
 class AnalysisInput:
     hs_code: str
@@ -169,31 +176,48 @@ class AnalysisInput:
     def is_total_import_growing(self) -> bool:
         if not self.previous_period:
             return False
-        return self.current_period.total_import_value > self.previous_period.total_import_value
+        return (
+            self.current_period.total_import_value
+            > self.previous_period.total_import_value
+        )
 
     @property
     def is_total_quantity_growing(self) -> bool:
         if not self.previous_period:
             return False
-        return self.current_period.total_import_quantity > self.previous_period.total_import_quantity
+        return (
+            self.current_period.total_import_quantity
+            > self.previous_period.total_import_quantity
+        )
 
     @property
     def unfriendly_share_declining(self) -> bool:
         if not self.previous_period:
             return False
-        return self.current_period.unfriendly_share < self.previous_period.unfriendly_share
+        return (
+            self.current_period.unfriendly_share < self.previous_period.unfriendly_share
+        )
 
     @property
     def unfriendly_share_stable_or_growing(self) -> bool:
         if not self.previous_period:
             return False
-        return self.current_period.unfriendly_share >= self.previous_period.unfriendly_share
+        return (
+            relative_change(
+                self.current_period.unfriendly_share,
+                self.previous_period.unfriendly_share,
+            )
+            > -_RELATIVE_SHARE_EPSILON
+        )
 
     @property
     def unfriendly_import_not_decreasing(self) -> bool:
         if not self.previous_period:
             return False
-        return self.current_period.unfriendly_import_value >= self.previous_period.unfriendly_import_value
+        return (
+            self.current_period.unfriendly_import_value
+            >= self.previous_period.unfriendly_import_value
+        )
 
     def get_period(self, year: int) -> Optional[PeriodData]:
         return self.periods_by_year.get(year)
@@ -230,7 +254,9 @@ class TradeAnalyzer:
             self.log_step("Сценарий 4.1: доля НС ≥ 30% и не снижается")
             self._evaluate_high_share()
         else:
-            self.log_step("Сценарий 4.2: доля НС < 30% или снижается / нет подтверждения роста")
+            self.log_step(
+                "Сценарий 4.2: доля НС < 30% или снижается / нет подтверждения роста"
+            )
             self._evaluate_low_share()
 
         if not self.recommended_measures:
@@ -266,24 +292,34 @@ class TradeAnalyzer:
                 self.log_step("Шаг 4.2.1.1: Условия выполнены → Мера 1")
                 self.recommended_measures.append(Measure.MEASURE_1)
             else:
-                self.log_step("Шаг 4.2.1.1: Доля НС не снижается → Мера 1 не применяется")
+                self.log_step(
+                    "Шаг 4.2.1.1: Доля НС не снижается → Мера 1 не применяется"
+                )
 
-            self.log_step("Проверяем возможность нетарифных мер (Мера 5 может идти вместе с Мерой 1)")
+            self.log_step(
+                "Проверяем возможность нетарифных мер (Мера 5 может идти вместе с Мерой 1)"
+            )
             self._analyze_non_tariff_measures()
             return
 
         if has_potential and not is_sufficient:
-            self.log_step("Шаг 4.2.1.2: Потенциал есть, но производство < потребления → Мера 6")
+            self.log_step(
+                "Шаг 4.2.1.2: Потенциал есть, но производство < потребления → Мера 6"
+            )
             self.recommended_measures.append(Measure.MEASURE_6)
             return
 
         if not has_potential and not is_sufficient:
-            self.log_step("Шаг 4.2.1.3: Тариф на максимуме, производство < потребления → анализ Китая")
+            self.log_step(
+                "Шаг 4.2.1.3: Тариф на максимуме, производство < потребления → анализ Китая"
+            )
             self._analyze_china_case()
             return
 
         if not has_potential and is_sufficient:
-            self.log_step("Шаг 4.2.1.4: Тариф на максимуме, производство >= потребления → анализ нетарифных мер")
+            self.log_step(
+                "Шаг 4.2.1.4: Тариф на максимуме, производство >= потребления → анализ нетарифных мер"
+            )
             self._analyze_non_tariff_measures()
             return
 
@@ -310,7 +346,9 @@ class TradeAnalyzer:
             year for year in self.data.periods_by_year if year < self.data.current_year
         )[-3:]
         if len(previous_years) < 3:
-            self.log_step("Недостаточно прошлых периодов для анализа (нужно 3) → Мера 6")
+            self.log_step(
+                "Недостаточно прошлых периодов для анализа (нужно 3) → Мера 6"
+            )
             self.recommended_measures.append(Measure.MEASURE_6)
             return
 
@@ -350,10 +388,14 @@ class TradeAnalyzer:
             self.recommended_measures.append(Measure.MEASURE_6)
             return
 
-        production_decline = self.data.production_consumption.is_production_declining_multi(
-            self.data.current_year
+        production_decline = (
+            self.data.production_consumption.is_production_declining_multi(
+                self.data.current_year
+            )
         )
-        self.log_step(f"Производство в РФ снижается относительно среднего предыдущих лет: {production_decline}")
+        self.log_step(
+            f"Производство в РФ снижается относительно среднего предыдущих лет: {production_decline}"
+        )
         if production_decline is False:
             self.log_step("Производство не снижается → Мера 6")
             self.recommended_measures.append(Measure.MEASURE_6)
@@ -365,7 +407,9 @@ class TradeAnalyzer:
 
         china_price = china_current.average_contract_price
         others_price = current_period.get_average_price_excluding("CN")
-        self.log_step(f"СКЦ Китая: {china_price:.4f}, СКЦ остальных стран: {others_price:.4f}")
+        self.log_step(
+            f"СКЦ Китая: {china_price:.4f}, СКЦ остальных стран: {others_price:.4f}"
+        )
 
         if china_price == 0 or others_price == 0:
             self.log_step("Нет данных о СКЦ → Мера 6")
@@ -402,7 +446,9 @@ class TradeAnalyzer:
 
         has_cert = nt.has_certification_requirement
         not_in_exception = not nt.in_minpromtorg_exception_list
-        import_growth_flag = self.data.is_total_quantity_growing or self.data.is_total_import_growing
+        import_growth_flag = (
+            self.data.is_total_quantity_growing or self.data.is_total_import_growing
+        )
         production_growth_flag = self.data.production_consumption.is_production_growing
 
         self.log_step(
@@ -413,7 +459,12 @@ class TradeAnalyzer:
             f"производство растёт={'Да' if production_growth_flag else 'Нет'}"
         )
 
-        if has_cert and not_in_exception and import_growth_flag and production_growth_flag:
+        if (
+            has_cert
+            and not_in_exception
+            and import_growth_flag
+            and production_growth_flag
+        ):
             self.log_step("Все условия выполнены → Мера 5")
             self.recommended_measures.append(Measure.MEASURE_5)
 
@@ -470,9 +521,9 @@ class RecommendationService:
             country.code: country.is_friendly for country in source_data.countries
         }
         self._country_name_cache: Dict[str, str] = {
-            country.code: country.name or country.code for country in source_data.countries
+            country.code: country.name or country.code
+            for country in source_data.countries
         }
-        self._quantity_map = load_quantity_map()
 
     def recommend(self, hs_code: str) -> List[int]:
         analysis_input = self._build_analysis_input(hs_code)
@@ -503,7 +554,9 @@ class RecommendationService:
         current_period = periods_by_year[current_year]
         previous_period = periods_by_year.get(previous_year) if previous_year else None
 
-        production_data = self._collect_production_consumption(hs_code, current_year, previous_year)
+        production_data = self._collect_production_consumption(
+            hs_code, current_year, previous_year
+        )
         tariff_data = self._collect_tariff_data(hs_code)
         non_tariff_data = self._collect_non_tariff_data(hs_code)
 
@@ -527,9 +580,7 @@ class RecommendationService:
             country_name = self._country_name_cache.get(country_code, country_code)
             is_friendly = self._country_cache.get(country_code, True)
             import_value = float(record.volume)
-            import_quantity = self._quantity_map.get(
-                (hs_code, country_code, record.year), 0.0
-            )
+            import_quantity = float(record.quantity)
 
             result.setdefault(record.year, []).append(
                 CountryImportData(
@@ -562,7 +613,9 @@ class RecommendationService:
 
         production_current = production_by_year.get(current_year, 0.0)
         consumption_current = consumption_by_year.get(current_year, 0.0)
-        production_previous = production_by_year.get(previous_year) if previous_year is not None else None
+        production_previous = (
+            production_by_year.get(previous_year) if previous_year is not None else None
+        )
 
         return ProductionConsumptionData(
             production=production_current,
@@ -580,14 +633,18 @@ class RecommendationService:
         applied_percent = (applied or 0.0) * 100
         wto_percent = (wto_max or 0.0) * 100
 
-        return TariffData(applied_tariff=applied_percent, wto_maximum_tariff=wto_percent)
+        return TariffData(
+            applied_tariff=applied_percent, wto_maximum_tariff=wto_percent
+        )
 
     def _collect_non_tariff_data(self, hs_code: str) -> Optional[NonTariffData]:
         restrictions = self._get_restrictions(hs_code)
         if not restrictions:
             return None
 
-        in_procurement = _parse_bool(restrictions.get("rf_decree_1875_present")) or False
+        in_procurement = (
+            _parse_bool(restrictions.get("rf_decree_1875_present")) or False
+        )
         has_cert = _parse_bool(restrictions.get("tech_regulations_present")) or False
         in_exception = _parse_bool(restrictions.get("order_4114_present")) or False
 
@@ -603,3 +660,34 @@ class RecommendationService:
             if restriction.hs_code == hs_code:
                 result[restriction.key] = restriction.value
         return result
+
+
+def calc_share(numerator: float, denominator: float) -> float:
+    """Безопасное вычисление доли (в процентах)."""
+    if denominator == 0:
+        return 0.0
+    return (numerator / denominator) * 100.0
+
+
+def is_increasing(
+    current: Optional[float], previous: Optional[float]
+) -> Optional[bool]:
+    """
+    Возвращает True, если текущее значение больше предыдущего,
+    False — если меньше, и None — когда хотя бы одно значение отсутствует.
+    """
+    if current is None or previous is None:
+        return None
+    return current > previous
+
+
+def is_not_decreasing(
+    current: Optional[float], previous: Optional[float]
+) -> Optional[bool]:
+    """
+    True — если текущее значение >= предыдущего,
+    False — если меньше, None — при отсутствии данных.
+    """
+    if current is None or previous is None:
+        return None
+    return current >= previous
