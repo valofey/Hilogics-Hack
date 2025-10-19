@@ -14,6 +14,7 @@ class ImportByCountry(BaseModel):
     country: str # 2 letter code
     year: int
     volume: float
+    quantity: float
 
 
 class VolumeGeneral(BaseModel):

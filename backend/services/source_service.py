@@ -39,6 +39,7 @@ def load_source_data(src_dir: Path = Path("./data")) -> SourceData:
                 country=row["country"],
                 year=int(row["year"]),
                 volume=float(row["volume"]),
+                quantity=float(row["quantity"]),
             )
             source.import_by_country.append(item)
 
