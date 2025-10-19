@@ -98,7 +98,9 @@ def create_report(
                 country_name = country_info.name if country_info else f"[{imp.country}]"
                 geography.append(
                     ImportStructureItem(
-                        country=country_name, country_code=imp.country, share_percent=imp.volume / total_vol
+                        country=country_name,
+                        country_code=imp.country,
+                        share_percent=imp.volume / total_vol,
                     )
                 )
         # Prices: absolute values (assuming volume = price in millions USD)
@@ -106,10 +108,16 @@ def create_report(
             country_info = country_by_code.get(imp.country)
             country_name = country_info.name if country_info else f"[{imp.country}]"
             price_usd = int(round(imp.volume * 1e6))
-            prices.append(ContractPriceItem(country=country_name, country_code=imp.country, price_usd=price_usd))
+            prices.append(
+                ContractPriceItem(
+                    country=country_name, country_code=imp.country, price_usd=price_usd
+                )
+            )
 
     recommendation_service = RecommendationService(source)
-    recommended_measures = recommendation_service.recommend(hs_code)
+    recommended_measures, recommended_reasons = recommendation_service.recommend(
+        hs_code
+    )
 
     recommendations: List[Recommendation] = []
     for code in recommended_measures:
@@ -121,7 +129,7 @@ def create_report(
         recommendations.append(
             Recommendation(
                 name=name,
-                reasons=[],
+                reasons=recommended_reasons,
                 similar_cases=[],
             )
         )

@@ -407,6 +407,9 @@ class TradeAnalyzer:
 
         china_price = china_current.average_contract_price
         others_price = current_period.get_average_price_excluding("CN")
+
+        # print(f"{china_price=} {others_price=}")
+
         self.log_step(
             f"СКЦ Китая: {china_price:.4f}, СКЦ остальных стран: {others_price:.4f}"
         )
@@ -525,18 +528,18 @@ class RecommendationService:
             for country in source_data.countries
         }
 
-    def recommend(self, hs_code: str) -> List[int]:
+    def recommend(self, hs_code: str) -> Tuple[List[int], List[str]]:
         analysis_input = self._build_analysis_input(hs_code)
         if not analysis_input:
-            return [int(Measure.MEASURE_6)]
+            return [int(Measure.MEASURE_6)], []
 
         analyzer = TradeAnalyzer(analysis_input)
         measures, _steps = analyzer.analyze()
 
         ordered = _ensure_unique_ordered(measures)
         if not ordered:
-            return [int(Measure.MEASURE_6)]
-        return ordered
+            return [int(Measure.MEASURE_6)], _steps
+        return ordered, _steps
 
     def _build_analysis_input(self, hs_code: str) -> Optional[AnalysisInput]:
         imports_by_year = self._collect_imports(hs_code)
