@@ -97,8 +97,10 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
 
   const organizationIsProvided = useMemo(() => {
     const name = organization?.name?.trim() ?? '';
-    return Boolean(name) && name !== PLACEHOLDER_ORGANIZATION_NAME;
-  }, [organization?.name]);
+    const inn = organization?.inn?.toString().trim() ?? '';
+    // Ask for company name and INN before sharing or downloading
+    return Boolean(name) && name !== PLACEHOLDER_ORGANIZATION_NAME && Boolean(inn);
+  }, [organization?.name, organization?.inn]);
 
   const formattedTimestamp = useMemo(
     () =>
@@ -302,8 +304,11 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
           <WorldMapCard geography={data.geography} prices={data.prices} />
         </section>
 
-        <section className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <section className="mt-8">
           <RecommendationsPanel recommendations={data.recommendations} />
+        </section>
+
+        <section className="mt-8">
           <NextStepsCard
             loading={localLoading || processing}
             organizationReady={organizationIsProvided}
