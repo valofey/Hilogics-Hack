@@ -27,6 +27,24 @@ export type ContractPriceItem = {
   country_code?: string;
 };
 
+export type ImpactMeasure = {
+  measure: string;
+  before: number;
+  after: number;
+};
+
+export type CaseStudy = {
+  description: string;
+  case_url: string;
+  impact: ImpactMeasure[];
+};
+
+export type Recommendation = {
+  name: string;
+  reasons: string[];
+  similar_cases: CaseStudy[];
+};
+
 export type OrganizationInfo = {
   name: string;
   inn: string | null;
@@ -46,7 +64,7 @@ export type DashboardData = {
   metrics: DashboardMetrics;
   geography: GeographyItem[];
   prices: ContractPriceItem[];
-  recommendations: string[];
+  recommendations: Recommendation[];
   share_url: string;
 };
 

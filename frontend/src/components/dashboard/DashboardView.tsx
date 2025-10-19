@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { TariffCard } from '@/components/dashboard/TariffCard';
 import { MetricTrendCard } from '@/components/dashboard/MetricTrendCard';
 import { WorldMapCard } from '@/components/dashboard/WorldMapCard';
-import { RecommendationsPanel } from '@/components/dashboard/RecommendationsPanel';
+import { RecommendationsPanel } from '@/components/dashboard/RecommendationsPanel2';
 import { NextStepsCard } from '@/components/dashboard/NextStepsCard';
 import { PdfReport } from '@/components/dashboard/PdfReport';
 import type { DashboardData, OrganizationInfo } from '@/types/dashboard';
@@ -204,7 +204,11 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
       }
     }
 
-    pdf.save(`mosprom-report-${generatedAt.toISOString()}.pdf`);
+    const safeStamp = generatedAt
+      .toISOString()
+      .replaceAll(':', '-')
+      .replaceAll('.', '-');
+    pdf.save(`mosprom-report-${safeStamp}.pdf`);
     setNotification({ type: 'success', message: 'PDF-отчёт сохранён' });
   };
 

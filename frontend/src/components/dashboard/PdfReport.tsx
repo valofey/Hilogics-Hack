@@ -272,8 +272,8 @@ export function PdfReport({ data, qrCode, generatedAt }: PdfReportProps) {
           <h2 className="text-lg font-semibold">Рекомендации по мерам поддержки</h2>
           <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
             {recommendations.map((item, index) => (
-              <div key={`${item}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                <p className="text-sm font-semibold text-slate-900">{item}</p>
+              <div key={`${item.name}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                <p className="text-sm font-semibold text-slate-900">{item.name}</p>
               </div>
             ))}
           </div>
