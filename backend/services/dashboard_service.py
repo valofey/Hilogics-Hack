@@ -20,9 +20,16 @@ import csv
 from pathlib import Path
 
 
+_GLOBAL_MAX_ID = 0
+
+_GLOBAL_STORAGE: Dict[int, DashboardData] = {}
+
+
 def create_report(
     product: ProductInfo, organization: OrganizationInfo
 ) -> DashboardData:
+    global _GLOBAL_MAX_ID
+
     hs_code = product.code
 
     source = load_source_data()
@@ -134,10 +141,12 @@ def create_report(
             )
         )
 
-    # 7. Share URL
-    share_url = generate_share_url(424242)
+    _GLOBAL_MAX_ID += 1
 
-    return DashboardData(
+    # 7. Share URL
+    share_url = generate_share_url(_GLOBAL_MAX_ID)
+
+    data = DashboardData(
         product=product,
         organization=organization,
         tariffs=tariffs,
@@ -148,18 +157,19 @@ def create_report(
         share_url=share_url,
     )
 
+    _GLOBAL_STORAGE[_GLOBAL_MAX_ID] = data
+
+    return data
+
 
 def generate_share_url(uid: int):
     return f"{settings.ui_base_url}/share/{uid}"
 
 
 def retrieve_report(uid: int):
-    res = create_report(
-        product=ProductInfo(name="retrieved produce", code="123400"),
-        organization=OrganizationInfo(name="retrieved org", inn="000"),
-    )
-    res.share_url = generate_share_url(uid)
-    return res
+    if uid not in _GLOBAL_STORAGE:
+        raise Exception("Document by ID Not found")
+    return _GLOBAL_STORAGE[uid]
 
 
 def get_tnved_list_service() -> List[TnvedItem]:
