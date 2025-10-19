@@ -16,13 +16,18 @@ _source_data = SourceData()
 _source_is_loaded = False
 
 
-def load_source_data(src_dir: Path = Path("./data")) -> SourceData:
-    global _source_data, _source_is_loaded
-    if _source_is_loaded:
-        return _source_data
-    _source_is_loaded = True
+def get_source_data():
+    global _source_is_loaded, _source_data
+    if not _source_is_loaded:
+        _source_data = _load_source_data()
+        _source_is_loaded = True
+        # print("[INFO] Data Preloaded")
+    return _source_data
 
-    _source_data = SourceData()
+
+def _load_source_data(src_dir: Path = Path("./data")) -> SourceData:
+
+    ds = SourceData()
 
     with open(src_dir / "countries.csv", "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -34,7 +39,7 @@ def load_source_data(src_dir: Path = Path("./data")) -> SourceData:
             else:
                 is_friendly = True
 
-            _source_data.countries.append(
+            ds.countries.append(
                 CountryInfo(
                     code=row.get("code", "").strip(),
                     name=row.get("name", "").strip(),
@@ -53,7 +58,7 @@ def load_source_data(src_dir: Path = Path("./data")) -> SourceData:
                 volume=float(row["volume"]),
                 quantity=float(row["quantity"]),
             )
-            _source_data.import_by_country.append(item)
+            ds.import_by_country.append(item)
 
     with open(src_dir / "volumes_general.csv", "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -64,7 +69,7 @@ def load_source_data(src_dir: Path = Path("./data")) -> SourceData:
                 year=int(row["year"]),
                 volume=float(row["volume"]),
             )
-            _source_data.volumes_general.append(item)
+            ds.volumes_general.append(item)
 
     with open(src_dir / "restrictions.csv", "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -72,37 +77,37 @@ def load_source_data(src_dir: Path = Path("./data")) -> SourceData:
             item = Restriction(
                 hs_code=row["hs_code"], key=row["key"], value=row["value"]
             )
-            _source_data.restrictions.append(item)
+            ds.restrictions.append(item)
 
-    return _source_data
+    return ds
 
 
 # ImportByCountry operations
 def get_import_by_country() -> List[ImportByCountry]:
-    return _source_data.import_by_country
+    return get_source_data().import_by_country
 
 
 def save_import_by_country(item: ImportByCountry):
     # Check if item already exists
     found = False
-    for i, existing_item in enumerate(_source_data.import_by_country):
+    for i, existing_item in enumerate(get_source_data().import_by_country):
         if (
             existing_item.hs_code == item.hs_code
             and existing_item.country == item.country
             and existing_item.year == item.year
         ):
-            _source_data.import_by_country[i] = item
+            get_source_data().import_by_country[i] = item
             found = True
             break
 
     if not found:
-        _source_data.import_by_country.append(item)
+        get_source_data().import_by_country.append(item)
 
 
 def delete_import_by_country(hs_code: str, country: str, year: int):
-    _source_data.import_by_country = [
+    get_source_data().import_by_country = [
         item
-        for item in _source_data.import_by_country
+        for item in get_source_data().import_by_country
         if not (
             item.hs_code == hs_code and item.country == country and item.year == year
         )
@@ -114,7 +119,7 @@ def export_import_by_country_csv():
     writer = csv.writer(output)
     writer.writerow(["hs_code", "country", "year", "volume"])
 
-    for item in _source_data.import_by_country:
+    for item in get_source_data().import_by_country:
         writer.writerow([item.hs_code, item.country, item.year, item.volume])
 
     output.seek(0)
@@ -141,30 +146,30 @@ def import_import_by_country_csv(file_content: str):
 
 # VolumeGeneral operations
 def get_volume_general() -> List[VolumeGeneral]:
-    return _source_data.volumes_general
+    return get_source_data().volumes_general
 
 
 def save_volume_general(item: VolumeGeneral):
     # Check if item already exists
     found = False
-    for i, existing_item in enumerate(_source_data.volumes_general):
+    for i, existing_item in enumerate(get_source_data().volumes_general):
         if (
             existing_item.hs_code == item.hs_code
             and existing_item.type == item.type
             and existing_item.year == item.year
         ):
-            _source_data.volumes_general[i] = item
+            get_source_data().volumes_general[i] = item
             found = True
             break
 
     if not found:
-        _source_data.volumes_general.append(item)
+        get_source_data().volumes_general.append(item)
 
 
 def delete_volume_general(hs_code: str, type: str, year: int):
-    _source_data.volumes_general = [
+    get_source_data().volumes_general = [
         item
-        for item in _source_data.volumes_general
+        for item in get_source_data().volumes_general
         if not (item.hs_code == hs_code and item.type == type and item.year == year)
     ]
 
@@ -174,7 +179,7 @@ def export_volume_general_csv():
     writer = csv.writer(output)
     writer.writerow(["hs_code", "type", "year", "volume"])
 
-    for item in _source_data.volumes_general:
+    for item in get_source_data().volumes_general:
         writer.writerow([item.hs_code, item.type, item.year, item.volume])
 
     output.seek(0)
@@ -200,26 +205,28 @@ def import_volume_general_csv(file_content: str):
 
 # Restriction operations
 def get_restriction() -> List[Restriction]:
-    return _source_data.restrictions
+    return get_source_data().restrictions
 
 
 def save_restriction(item: Restriction):
     # Check if item already exists
+    source_data = get_source_data()
     found = False
-    for i, existing_item in enumerate(_source_data.restrictions):
+    for i, existing_item in enumerate(source_data.restrictions):
         if existing_item.hs_code == item.hs_code and existing_item.key == item.key:
-            _source_data.restrictions[i] = item
+            source_data.restrictions[i] = item
             found = True
             break
 
     if not found:
-        _source_data.restrictions.append(item)
+        source_data.restrictions.append(item)
 
 
 def delete_restriction(hs_code: str, key: str):
-    _source_data.restrictions = [
+    source_data = get_source_data()
+    source_data.restrictions = [
         item
-        for item in _source_data.restrictions
+        for item in source_data.restrictions
         if not (item.hs_code == hs_code and item.key == key)
     ]
 
@@ -228,8 +235,8 @@ def export_restriction_csv():
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["hs_code", "key", "value"])
-
-    for item in _source_data.restrictions:
+    source_data = get_source_data()
+    for item in source_data.restrictions:
         writer.writerow([item.hs_code, item.key, item.value])
 
     output.seek(0)

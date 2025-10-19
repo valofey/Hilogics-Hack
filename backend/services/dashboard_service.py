@@ -1,6 +1,6 @@
 from collections import defaultdict
 from typing import Dict, List
-from services.source_service import load_source_data
+from services.source_service import get_source_data
 from models.source import VolumeGeneral
 from schemas.dashboard_schemas import TnvedItem
 from config import settings
@@ -32,7 +32,7 @@ def create_report(
 
     hs_code = product.code
 
-    source = load_source_data()
+    source = get_source_data()
 
     country_by_code = {c.code: c for c in source.countries}
 
