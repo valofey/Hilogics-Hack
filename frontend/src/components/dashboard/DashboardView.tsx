@@ -1,3 +1,4 @@
+import type { FormEvent } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -74,19 +75,19 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
     () => [
       {
         title: 'Импорт',
-        subtitle: 'Внешние поставки товара',
+        subtitle: 'Объёмы поставок в Россию',
         data: data.metrics.import_data,
         color: { stroke: '#2563eb', fill: '#3b82f6', gradientId: 'import' }
       },
       {
         title: 'Производство',
-        subtitle: 'Российский выпуск',
+        subtitle: 'Отечественный выпуск',
         data: data.metrics.production,
         color: { stroke: '#f97316', fill: '#fb923c', gradientId: 'production' }
       },
       {
         title: 'Потребление',
-        subtitle: 'Спрос на рынке',
+        subtitle: 'Спрос на внутреннем рынке',
         data: data.metrics.consumption,
         color: { stroke: '#14b8a6', fill: '#2dd4bf', gradientId: 'consumption' }
       }
@@ -138,18 +139,16 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
       }
       if (link) {
         await navigator.clipboard.writeText(link);
-        setNotification({
-          type: 'success',
-          message: 'Ссылка скопирована в буфер обмена'
-        });
-      } else {
-        throw new Error('Не удалось получить ссылку');
+        setNotification({ type: 'success', message: 'Ссылка скопирована в буфер обмена' });
+        return link;
       }
+      throw new Error('Не удалось сформировать ссылку');
     } catch (error) {
       setNotification({
         type: 'error',
-        message: error instanceof Error ? error.message : 'Не удалось скопировать ссылку'
+        message: error instanceof Error ? error.message : 'Не удалось получить ссылку'
       });
+      return null;
     }
   };
 
@@ -195,30 +194,25 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
         secondPageCanvas.height = remainingHeight;
         const context = secondPageCanvas.getContext('2d');
         if (context) {
-          context.drawImage(
-            canvas,
-            0,
-            canvas.height - remainingHeight,
-            canvas.width,
-            remainingHeight,
-            0,
-            0,
-            canvas.width,
-            remainingHeight
-          );
-          pdf.addPage();
+          context.drawImage(canvas, 0, canvas.height - remainingHeight, canvas.width, remainingHeight, 0, 0, canvas.width, remainingHeight);
           const secondImage = secondPageCanvas.toDataURL('image/png', 1);
+          pdf.addPage();
           pdf.addImage(secondImage, 'PNG', 0, 0, width, (remainingHeight * width) / canvas.width);
         }
       }
     }
 
-    pdf.save(`mosprom-report-${dataset.product.code}.pdf`);
+    pdf.save(`mosprom-report-${generatedAt.toISOString()}.pdf`);
+    setNotification({ type: 'success', message: 'PDF-отчёт сохранён' });
   };
 
-  const handleSubmitOrganization = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmitOrganization = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!shareMode) {
+    const formData = new FormData(event.currentTarget);
+    const name = (formData.get('org-name') as string).trim();
+    const inn = (formData.get('org-inn') as string).trim();
+
+    if (!name) {
       return;
     }
 
@@ -226,23 +220,15 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
     setNotification(null);
 
     try {
-      const updated = await onRequestOrganizationUpdate(organization);
-      const dataset = updated ?? getDatasetForExport();
-      setShareLink(dataset.share_url ?? null);
-      setIsModalOpen(false);
-
+      const updated = await onRequestOrganizationUpdate({ name, inn: inn || null });
       if (updated) {
         setOrganization(updated.organization);
-      }
-
-      if (shareMode === 'link') {
-        await ensureShareLinkAndCopy(dataset.share_url ?? null);
-      } else {
-        await handleGeneratePdf(dataset);
-        setNotification({
-          type: 'success',
-          message: 'PDF-отчёт сохранён'
-        });
+        setShareLink(updated.share_url ?? null);
+        if (shareMode === 'link') {
+          await ensureShareLinkAndCopy(updated.share_url ?? null);
+        } else if (shareMode === 'pdf') {
+          await handleGeneratePdf(updated);
+        }
       }
     } catch (error) {
       setNotification({
@@ -251,49 +237,46 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
       });
     } finally {
       setLocalLoading(false);
+      setIsModalOpen(false);
+      setShareMode(null);
     }
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-100 pb-16">
-      <div className="mx-auto max-w-[1400px] px-6 py-10 lg:px-10">
-        <header className="rounded-3xl border border-white/60 bg-white/80 p-8 shadow-xl backdrop-blur">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-3">
-              <Button variant="ghost" size="sm" className="h-9 w-fit gap-2 border border-slate-200" onClick={onReset}>
+    <div className="relative min-h-screen bg-white pb-16">
+      <div className="mx-auto w-full max-w-6xl px-6 py-12">
+        <header className="border border-black bg-white p-8">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-fit gap-2 border border-black bg-white text-black"
+                onClick={onReset}
+              >
                 <ArrowLeft className="h-4 w-4" />
-                Новый отчёт
+                Новый запрос
               </Button>
-              <div>
-                <p className="text-sm text-sky-600">Аналитический отчёт MOSPROM</p>
-                <h1 className="mt-2 text-3xl font-semibold text-slate-900 sm:text-4xl">{data.product.name}</h1>
-              </div>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-                <span className="rounded-full bg-sky-100 px-3 py-1 font-medium text-sky-700">
-                  Код ТН ВЭД · {data.product.code}
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1">
-                  <CalendarClock className="h-4 w-4 text-slate-500" />
-                  Обновлено {formattedTimestamp}
-                </span>
-              </div>
+              <span className="border border-black bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                Код ТН ВЭД {data.product.code}
+              </span>
+              <span className="border border-black bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide">
+                <CalendarClock className="mr-2 h-4 w-4 text-slate-500" />
+                Обновлено {formattedTimestamp}
+              </span>
+            </div>
+            <div className="space-y-4">
+              <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">{data.product.name}</h1>
               <p className="max-w-2xl text-sm text-slate-600">
-                В отчёт входят динамика импорта, производства и потребления, сравнение тарифов, география поставок и
-                рекомендуемые меры поддержки.
+                Перед вами рабочий набор данных по коду ТН ВЭД: динамика импорта и внутреннего рынка, действующие
+                тарифы и ключевые рынки сбыта. Используйте эти сведения, чтобы обосновать потенциал и подготовить
+                обращения за мерами поддержки.
               </p>
             </div>
-
-            {organizationIsProvided ? (
-              <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 text-left shadow-sm">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Организация</p>
-                <p className="mt-2 text-base font-semibold text-slate-900">{organization.name}</p>
-                {organization.inn ? <p className="text-xs text-slate-500">ИНН: {organization.inn}</p> : null}
-              </div>
-            ) : null}
           </div>
         </header>
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-4">
+        <section className="mt-8 grid gap-4 lg:grid-cols-3">
           {metricsConfig.map((metric) => (
             <MetricTrendCard
               key={metric.title}
@@ -304,11 +287,15 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
               domain={globalMetricDomain}
             />
           ))}
-          <TariffCard tariffs={data.tariffs} />
         </section>
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <section className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)]">
+          <TariffCard tariffs={data.tariffs} className="h-full" />
           <WorldMapCard geography={data.geography} prices={data.prices} />
+        </section>
+
+        <section className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <RecommendationsPanel recommendations={data.recommendations} />
           <NextStepsCard
             loading={localLoading || processing}
             organizationReady={organizationIsProvided}
@@ -316,57 +303,34 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
             onAction={handleAction}
           />
         </section>
-
-        <section className="mt-10">
-          <RecommendationsPanel recommendations={data.recommendations} />
-        </section>
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Контактные данные организации</DialogTitle>
+            <DialogTitle>Уточните организацию</DialogTitle>
             <DialogDescription>
-              Укажите актуальное наименование и ИНН, чтобы поделиться отчётом с экспертом MOSPROM.
+              Укажите юридическое лицо и ИНН — эти данные попадут в отчёт и пригодятся для индивидуальных рекомендаций.
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleSubmitOrganization}>
             <div className="space-y-2">
-              <Label htmlFor="org-name">Организация</Label>
+              <Label htmlFor="org-name">Название компании</Label>
               <Input
                 id="org-name"
-                placeholder="АО «Компания»"
-                value={organization.name === PLACEHOLDER_ORGANIZATION_NAME ? '' : organization.name}
-                onChange={(event) =>
-                  setOrganization((prev) => ({
-                    ...prev,
-                    name: event.target.value
-                  }))
-                }
+                name="org-name"
+                placeholder="Например, АО «Компания»"
+                defaultValue={organization.name === PLACEHOLDER_ORGANIZATION_NAME ? '' : organization.name}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="org-inn">ИНН (при наличии)</Label>
-              <Input
-                id="org-inn"
-                placeholder="1234567890"
-                value={organization.inn ?? ''}
-                onChange={(event) =>
-                  setOrganization((prev) => ({
-                    ...prev,
-                    inn: event.target.value.trim() ? event.target.value : null
-                  }))
-                }
-              />
+              <Label htmlFor="org-inn">ИНН (опционально)</Label>
+              <Input id="org-inn" name="org-inn" placeholder="1234567890" defaultValue={organization.inn ?? ''} />
             </div>
-            <Button
-              type="submit"
-              className="h-11 w-full gap-2 rounded-xl bg-sky-600 text-white hover:bg-sky-700"
-              disabled={localLoading}
-            >
+            <Button type="submit" className="w-full gap-2 normal-case" disabled={localLoading}>
               {localLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Сохранить и продолжить
+              Сохранить данные и продолжить
             </Button>
           </form>
         </DialogContent>
@@ -385,13 +349,7 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
 
       {notification ? (
         <div className="fixed bottom-6 right-6 z-50">
-          <div
-            className={`rounded-2xl px-4 py-3 text-sm font-medium shadow-lg ${
-              notification.type === 'success'
-                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                : 'border border-rose-200 bg-rose-50 text-rose-600'
-            }`}
-          >
+          <div className="border border-black bg-white px-4 py-3 text-sm font-medium text-slate-900">
             {notification.message}
           </div>
         </div>
@@ -399,3 +357,4 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
     </div>
   );
 }
+
