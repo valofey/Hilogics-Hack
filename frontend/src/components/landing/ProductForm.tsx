@@ -12,25 +12,33 @@ let tnvedCache: TnvedItem[] | null = null;
 let tnvedListPromise: Promise<TnvedItem[]> | null = null;
 const DEFAULT_PRODUCT_NAME = 'Товар для проверки';
 
-type ProductFormValues = {
+type ProductFormState = {
   productName: string;
   tnVedCode: string;
 };
 
+type ProductFormSubmitValues = {
+  productName: string;
+  tnVedCode: string;
+  tnVedDisplayCode: string;
+  tnVedDescription: string | null;
+};
+
 type ProductFormProps = {
   loading?: boolean;
-  onSubmit: (values: ProductFormValues) => void;
+  onSubmit: (values: ProductFormSubmitValues) => void;
   error?: string | null;
 };
 
 export function ProductForm({ loading, onSubmit, error }: ProductFormProps) {
-  const [values, setValues] = useState<ProductFormValues>({
+  const [values, setValues] = useState<ProductFormState>({
     productName: '',
     tnVedCode: ''
   });
   const [tnvedItems, setTnvedItems] = useState<TnvedItem[]>(() => tnvedCache ?? []);
   const [tnvedLoading, setTnvedLoading] = useState(!tnvedCache);
   const [isCodeFocused, setIsCodeFocused] = useState(false);
+  const [selectedDescription, setSelectedDescription] = useState<string>('');
 
   useEffect(() => {
     let isActive = true;
@@ -79,6 +87,19 @@ export function ProductForm({ loading, onSubmit, error }: ProductFormProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!values.tnVedCode) {
+      return;
+    }
+    const normalizedValue = values.tnVedCode.replace(/[.\s]/g, '').toLowerCase();
+    const matchedItem = tnvedItems.find(
+      (item) => item.code.replace(/[.\s]/g, '').toLowerCase() === normalizedValue
+    );
+    if (matchedItem) {
+      setSelectedDescription(matchedItem.description);
+    }
+  }, [tnvedItems, values.tnVedCode]);
+
   const tnvedQuery = values.tnVedCode.trim();
   const tnvedSuggestions = useMemo(() => {
     if (!tnvedQuery) {
@@ -103,16 +124,25 @@ export function ProductForm({ loading, onSubmit, error }: ProductFormProps) {
       ...prev,
       tnVedCode: item.code
     }));
+    setSelectedDescription(item.description);
     setIsCodeFocused(false);
   };
 
   const handleChange =
-    (field: keyof ProductFormValues) =>
+    (field: keyof ProductFormState) =>
     (event: ChangeEvent<HTMLInputElement>) => {
       setValues((prev) => ({
         ...prev,
         [field]: event.target.value
       }));
+      if (field === 'tnVedCode') {
+        const inputValue = event.target.value;
+        const normalizedValue = inputValue.replace(/[.\s]/g, '').toLowerCase();
+        const matchedItem = tnvedItems.find(
+          (item) => item.code.replace(/[.\s]/g, '').toLowerCase() === normalizedValue
+        );
+        setSelectedDescription(matchedItem ? matchedItem.description : '');
+      }
     };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -124,16 +154,18 @@ export function ProductForm({ loading, onSubmit, error }: ProductFormProps) {
     const productName = values.productName.trim() || DEFAULT_PRODUCT_NAME;
     onSubmit({
       productName,
-      tnVedCode: sanitizedCode
+      tnVedCode: sanitizedCode,
+      tnVedDisplayCode: values.tnVedCode.trim(),
+      tnVedDescription: selectedDescription ? selectedDescription : null
     });
   };
 
   return (
-    <Card className="border border-white bg-transparent text-white">
+    <Card>
       <CardContent className="space-y-6 p-6">
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="product-name" className="text-sm font-medium uppercase text-white">
+            <Label htmlFor="product-name" className="text-sm font-medium uppercase">
               Название продукта
             </Label>
             <Input
@@ -142,11 +174,11 @@ export function ProductForm({ loading, onSubmit, error }: ProductFormProps) {
               value={values.productName}
               onChange={handleChange('productName')}
               disabled={loading}
-              className="border border-white bg-[#1f1f1f] text-white placeholder:text-slate-400 focus-visible:ring-white"
+              className=""
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="tn-ved" className="text-sm font-medium uppercase text-white">
+            <Label htmlFor="tn-ved" className="text-sm font-medium uppercase">
               Код ТН ВЭД
             </Label>
             <div className="relative">
@@ -160,10 +192,10 @@ export function ProductForm({ loading, onSubmit, error }: ProductFormProps) {
                 disabled={loading}
                 required
                 autoComplete="off"
-                className="border border-white bg-[#1f1f1f] text-white placeholder:text-slate-400 focus-visible:ring-white"
+                className=""
               />
               {showSuggestionDropdown ? (
-                <div className="absolute left-0 right-0 z-20 mt-2 max-h-64 border border-white bg-[#111111]">
+                <div className="absolute left-0 right-0 z-20 mt-2 max-h-64 border border-black bg-white">
                   {tnvedLoading ? (
                     <div className="px-3 py-2 text-sm text-slate-300">Загружаем коды...</div>
                   ) : (
@@ -172,14 +204,14 @@ export function ProductForm({ loading, onSubmit, error }: ProductFormProps) {
                         <li key={item.code}>
                           <button
                             type="button"
-                            className="flex w-full flex-col items-start gap-1 px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-white/10 focus:bg-white/10 focus:outline-none"
+                            className="flex w-full flex-col items-start gap-1 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-black/5 focus:bg-black/5 focus:outline-none"
                             onMouseDown={(event) => {
                               event.preventDefault();
                               handleSuggestionSelect(item);
                             }}
                           >
-                            <span className="font-medium text-white">{item.code}</span>
-                            <span className="text-xs text-slate-400">{item.description}</span>
+                            <span className="font-medium text-black">{item.code}</span>
+                            <span className="text-xs text-slate-500">{item.description}</span>
                           </button>
                         </li>
                       ))}
@@ -195,7 +227,7 @@ export function ProductForm({ loading, onSubmit, error }: ProductFormProps) {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full gap-2 border border-white bg-white text-black transition hover:bg-transparent hover:text-white"
+            className="w-full gap-2"
           >
             {loading ? (
               <>

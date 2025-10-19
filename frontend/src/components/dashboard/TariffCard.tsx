@@ -16,7 +16,7 @@ export function TariffCard({ tariffs, className }: TariffCardProps) {
   const isAbove = delta >= 0;
 
   return (
-    <Card className={cn('flex h-full flex-col border border-black bg-white p-6', className)}>
+    <Card className={cn('tariff-card flex h-full flex-col border border-black bg-white p-6', className)}>
       <div className="flex items-start justify-between gap-6">
         <div className="space-y-4">
           <Badge className="border border-black bg-white text-black">Таможенное регулирование</Badge>

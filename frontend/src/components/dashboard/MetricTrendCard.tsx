@@ -61,6 +61,7 @@ export function MetricTrendCard({ title, subtitle, data, domain, color, footer }
                 dataKey="year"
                 axisLine={false}
                 tickLine={false}
+                interval={0}
                 tick={{ fill: '#64748b', fontSize: 12 }}
                 tickMargin={10}
               />

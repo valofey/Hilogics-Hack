@@ -33,6 +33,8 @@ export type OrganizationInfo = {
 export type ProductInfo = {
   name: string;
   code: string;
+  display_code?: string | null;
+  description?: string | null;
 };
 
 export type DashboardData = {

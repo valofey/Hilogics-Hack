@@ -109,6 +109,8 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
     [viewTimestamp]
   );
 
+  const productDescription = data.product.description?.trim() ?? '';
+
   const handleAction = async (mode: ShareMode) => {
     setNotification(null);
 
@@ -257,26 +259,29 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
                 <ArrowLeft className="h-4 w-4" />
                 Новый запрос
               </Button>
-              <span className="border border-black bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide">
-                Код ТН ВЭД {data.product.code}
-              </span>
-              <span className="border border-black bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide">
-                <CalendarClock className="mr-2 h-4 w-4 text-slate-500" />
+              <span className="inline-flex items-center gap-2 border border-black bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide">
+                <CalendarClock className="h-4 w-4 text-slate-500" />
                 Обновлено {formattedTimestamp}
               </span>
             </div>
-            <div className="space-y-4">
-              <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">{data.product.name}</h1>
-              <p className="max-w-2xl text-sm text-slate-600">
-                Перед вами рабочий набор данных по коду ТН ВЭД: динамика импорта и внутреннего рынка, действующие
-                тарифы и ключевые рынки сбыта. Используйте эти сведения, чтобы обосновать потенциал и подготовить
-                обращения за мерами поддержки.
-              </p>
+            <div className="space-y-3">
+              <h1 className="text-3xl font-semibold leading-tight text-slate-900 sm:text-4xl">
+                {data.product.name}
+              </h1>
+              {productDescription ? (
+                <p className="max-w-3xl text-sm text-slate-700 sm:text-base">
+                  <strong>
+                    {`Код ТН ВЭД ${data.product.display_code ?? data.product.code}`}
+                  </strong>
+                  {`: ${productDescription}`}
+                </p>
+              ) : null}
             </div>
           </div>
         </header>
 
-        <section className="mt-8 grid gap-4 lg:grid-cols-3">
+        <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <TariffCard tariffs={data.tariffs} className="h-full" />
           {metricsConfig.map((metric) => (
             <MetricTrendCard
               key={metric.title}
@@ -289,8 +294,7 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
           ))}
         </section>
 
-        <section className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.4fr)]">
-          <TariffCard tariffs={data.tariffs} className="h-full" />
+        <section className="mt-8">
           <WorldMapCard geography={data.geography} prices={data.prices} />
         </section>
 
@@ -357,4 +361,3 @@ export function DashboardView({ data, onRequestOrganizationUpdate, processing, o
     </div>
   );
 }
-

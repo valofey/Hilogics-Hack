@@ -8,7 +8,7 @@ type LandingHeroProps = ComponentProps<typeof ProductForm>;
 
 export function LandingHero(props: LandingHeroProps) {
   return (
-    <div className="bg-[#141414] text-white">
+    <div className="min-h-screen bg-[#141414] text-white">
       <div className="mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-6xl flex-col justify-center px-6 py-16 md:py-24">
         <motion.div
           initial={{ opacity: 0, y: 16 }}

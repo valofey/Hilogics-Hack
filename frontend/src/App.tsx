@@ -11,6 +11,8 @@ type ViewState = "landing" | "dashboard";
 type ProductFormValues = {
   productName: string;
   tnVedCode: string;
+  tnVedDisplayCode: string;
+  tnVedDescription: string | null;
 };
 
 const fallbackOrganization: OrganizationInfo = {
@@ -38,7 +40,15 @@ function App() {
         product: { name: productName, code: sanitizedCode },
         organization
       });
-      setDashboardData(response.dashboard);
+      const enrichedDashboard: DashboardData = {
+        ...response.dashboard,
+        product: {
+          ...response.dashboard.product,
+          description: values.tnVedDescription ?? null,
+          display_code: values.tnVedDisplayCode
+        }
+      };
+      setDashboardData(enrichedDashboard);
       setView("dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не удалось сформировать отчёт");
@@ -55,11 +65,19 @@ function App() {
       setProcessing(true);
       try {
         const response = await api.createDashboard({
-          product: dashboardData.product,
+          product: { name: dashboardData.product.name, code: dashboardData.product.code },
           organization
         });
-        setDashboardData(response.dashboard);
-        return response.dashboard;
+        const enrichedDashboard: DashboardData = {
+          ...response.dashboard,
+          product: {
+            ...response.dashboard.product,
+            description: dashboardData.product.description ?? null,
+            display_code: dashboardData.product.display_code ?? null
+          }
+        };
+        setDashboardData(enrichedDashboard);
+        return enrichedDashboard;
       } finally {
         setProcessing(false);
       }
