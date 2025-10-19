@@ -27,6 +27,8 @@ _MEASURE_DESCRIPTIONS: Dict[Measure, str] = {
     Measure.MEASURE_6: "Мера 6: Дополнительные меры не требуются",
 }
 
+_RELATIVE_SHARE_EPSILON = 0.02
+
 
 @dataclass
 class CountryImportData:
@@ -155,8 +157,8 @@ class NonTariffData:
     in_minpromtorg_exception_list: bool
 
 
-# def relative_change(a: int|float, b: int|float):
-#     return abs(a - b)/
+def relative_change(new_value: int | float, old_value: int | float):
+    return 0.0 if not old_value else (new_value - old_value) / float(old_value)
 
 
 @dataclass
@@ -201,8 +203,11 @@ class AnalysisInput:
         if not self.previous_period:
             return False
         return (
-            self.current_period.unfriendly_share
-            >= self.previous_period.unfriendly_share
+            relative_change(
+                self.current_period.unfriendly_share,
+                self.previous_period.unfriendly_share,
+            )
+            > -_RELATIVE_SHARE_EPSILON
         )
 
     @property
