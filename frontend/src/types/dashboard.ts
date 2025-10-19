@@ -18,11 +18,13 @@ export type TariffInfo = {
 export type GeographyItem = {
   country: string;
   share_percent: number;
+  country_code?: string;
 };
 
 export type ContractPriceItem = {
   country: string;
   price_usd: number;
+  country_code?: string;
 };
 
 export type OrganizationInfo = {
