@@ -117,10 +117,12 @@ def delete_import_by_country(hs_code: str, country: str, year: int):
 def export_import_by_country_csv():
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["hs_code", "country", "year", "volume"])
+    writer.writerow(["hs_code", "country", "year", "volume", "quantity"])
 
     for item in get_source_data().import_by_country:
-        writer.writerow([item.hs_code, item.country, item.year, item.volume])
+        writer.writerow(
+            [item.hs_code, item.country, item.year, item.volume, item.quantity]
+        )
 
     output.seek(0)
     return StreamingResponse(
