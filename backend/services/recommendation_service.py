@@ -155,6 +155,10 @@ class NonTariffData:
     in_minpromtorg_exception_list: bool
 
 
+# def relative_change(a: int|float, b: int|float):
+#     return abs(a - b)/
+
+
 @dataclass
 class AnalysisInput:
     hs_code: str
