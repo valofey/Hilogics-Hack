@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { geoMercator, geoPath } from 'd3-geo';
 import { scaleLinear } from 'd3-scale';
 import countries from 'i18n-iso-countries';
@@ -20,8 +20,8 @@ countries.registerLocale(ruLocale as LocaleData);
 countries.registerLocale(enLocale as LocaleData);
 
 const CODE_NAME_OVERRIDES: Record<string, string[]> = {
-  BY: ['Беларусь', 'Белоруссия'],
-  CN: ['Китай', 'КНР']
+  BY: ['Р‘РµР»Р°СЂСѓСЃСЊ', 'Р‘РµР»РѕСЂСѓСЃСЃРёСЏ'],
+  CN: ['РљРёС‚Р°Р№', 'РљРќР ']
 };
 
 type WorldMapCardProps = {
@@ -234,11 +234,11 @@ export function WorldMapCard({ geography, prices }: WorldMapCardProps) {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900">
           <Globe2 className="h-6 w-6 text-slate-900" />
-          География спроса
+          Р“РµРѕРіСЂР°С„РёСЏ СЃРїСЂРѕСЃР°
         </CardTitle>
         <p className="text-sm text-slate-600">
-          Отобразите топ стран по доле импорта: наведите курсор на территорию или выберите страну из списка, чтобы
-          увидеть долю и среднюю цену контракта.
+          РћС‚РѕР±СЂР°Р·РёС‚Рµ С‚РѕРї СЃС‚СЂР°РЅ РїРѕ РґРѕР»Рµ РёРјРїРѕСЂС‚Р°: РЅР°РІРµРґРёС‚Рµ РєСѓСЂСЃРѕСЂ РЅР° С‚РµСЂСЂРёС‚РѕСЂРёСЋ РёР»Рё РІС‹Р±РµСЂРёС‚Рµ СЃС‚СЂР°РЅСѓ РёР· СЃРїРёСЃРєР°, С‡С‚РѕР±С‹
+          СѓРІРёРґРµС‚СЊ РґРѕР»СЋ Рё СЃСЂРµРґРЅСЋСЋ С†РµРЅСѓ РєРѕРЅС‚СЂР°РєС‚Р°.
         </p>
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
@@ -321,14 +321,14 @@ export function WorldMapCard({ geography, prices }: WorldMapCardProps) {
               style={{ left: tooltipPosition.x + 12, top: tooltipPosition.y + 12 }}
             >
               <p className="font-semibold text-slate-900">{activeCountry.country}</p>
-              <p>Доля импорта: {formatPercent(activeCountry.share_percent)}</p>
+              <p>Р”РѕР»СЏ РёРјРїРѕСЂС‚Р°: {formatPercent(activeCountry.share_percent)}</p>
               <p>
-                Средняя контрактная цена:{' '}
+                РЎСЂРµРґРЅСЏСЏ РєРѕРЅС‚СЂР°РєС‚РЅР°СЏ С†РµРЅР°:{' '}
                 {(() => {
                   const priceValue =
                     (activeCountry.country_code && priceByCode.get(activeCountry.country_code)) ??
                     priceByName.get(activeCountry.country);
-                  return priceValue != null ? formatCurrency(priceValue) : '—';
+                  return typeof priceValue === 'number' ? formatCurrency(priceValue) : 'вЂ”';
                 })()}
               </p>
             </div>
@@ -336,7 +336,7 @@ export function WorldMapCard({ geography, prices }: WorldMapCardProps) {
         </div>
 
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Топ стран по доле импорта</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">РўРѕРї СЃС‚СЂР°РЅ РїРѕ РґРѕР»Рµ РёРјРїРѕСЂС‚Р°</p>
           <div className="space-y-2">
             {sortedGeography.map((item) => {
               const price = (item.country_code && priceByCode.get(item.country_code)) ?? priceByName.get(item.country);
@@ -365,13 +365,13 @@ export function WorldMapCard({ geography, prices }: WorldMapCardProps) {
                         {item.country}
                       </p>
                       <p className={cn('text-xs', isActive ? 'text-white/80' : 'text-slate-500')}>
-                        Импортная доля {formatPercent(item.share_percent)}
+                        РРјРїРѕСЂС‚РЅР°СЏ РґРѕР»СЏ {formatPercent(item.share_percent)}
                       </p>
                     </div>
                     <div className={cn('text-right text-xs', isActive ? 'text-white/80' : 'text-slate-500')}>
-                      <span className={cn('block', isActive ? 'text-white/60' : 'text-slate-400')}>Контрактная цена</span>
+                      <span className={cn('block', isActive ? 'text-white/60' : 'text-slate-400')}>РљРѕРЅС‚СЂР°РєС‚РЅР°СЏ С†РµРЅР°</span>
                       <span className={cn('font-semibold', isActive ? 'text-white' : 'text-slate-800')}>
-                        {price != null ? formatCurrency(price) : '—'}
+                        {typeof price === 'number' ? formatCurrency(price) : 'вЂ”'}
                       </span>
                     </div>
                   </div>
@@ -384,3 +384,6 @@ export function WorldMapCard({ geography, prices }: WorldMapCardProps) {
     </Card>
   );
 }
+
+
+

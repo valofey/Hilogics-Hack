@@ -1,58 +1,543 @@
 {
-  "dashboard_data": {
-    "product": {
-      "name": "Банкоматы",
-      "code": "8472.90.100.00"
-    },
-    "tariffs": {
-      "current": 0.15,
-      "wto_obligation": 0.12
-    },
-    "metrics": {
-      "import": {
-        "history": [
-          { "year": 2022, "value": 10000, "change_percent": 0.05 },
-          { "year": 2023, "value": 10500, "change_percent": 0.03 },
-          { "year": 2024, "value": 11000, "change_percent": 0.02 }
-        ]
+  "dashboard": {
+      "product": {
+          "name": "Товар для проверки",
+          "code": "842810"
       },
-      "production": {
-        "history": [
-          { "year": 2022, "value": 5000, "change_percent": -0.02 },
-          { "year": 2023, "value": 4900, "change_percent": -0.01 },
-          { "year": 2024, "value": 4800, "change_percent": 0.01 }
-        ]
+      "organization": {
+          "name": "АО «Компания»",
+          "inn": null
       },
-      "consumption": {
-        "history": [
-          { "year": 2022, "value": 15000, "change_percent": 0.03 },
-          { "year": 2023, "value": 15400, "change_percent": 0.02 },
-          { "year": 2024, "value": 15800, "change_percent": 0.01 }
-        ]
-      }
-    },
-    "geography": {
-      "import_structure": [
-        { "country": "Китай", "share_percent": 0.40 },
-        { "country": "Германия", "share_percent": 0.20 },
-        { "country": "Польша", "share_percent": 0.15 },
-        { "country": "Турция", "share_percent": 0.10 },
-        { "country": "Италия", "share_percent": 0.08 },
-        { "country": "Другие", "share_percent": 0.07 }
-      ]
-    },
-    "prices": {
-      "contract_price_top": [
-        { "country": "Китай", "price_usd": 20000 },
-        { "country": "Германия", "price_usd": 35000 },
-        { "country": "Польша", "price_usd": 27000 },
-        { "country": "Турция", "price_usd": 22000 },
-        { "country": "Италия", "price_usd": 30000 }
-      ]
-    },
-    "recommendations": [
-      "Мера поддержки 1",
-      "Мера поддержки 2"
-    ]
+      "tariffs": {
+          "current": 0,
+          "wto_obligation": 0.05
+      },
+      "metrics": {
+          "import_data": [
+              {
+                  "year": 2022,
+                  "value": 285389000,
+                  "change_percent": 0
+              },
+              {
+                  "year": 2023,
+                  "value": 299991000,
+                  "change_percent": 5.12
+              },
+              {
+                  "year": 2024,
+                  "value": 306845000,
+                  "change_percent": 2.28
+              }
+          ],
+          "production": [
+              {
+                  "year": 2022,
+                  "value": 286000000,
+                  "change_percent": 0
+              },
+              {
+                  "year": 2023,
+                  "value": 300000000,
+                  "change_percent": 4.9
+              },
+              {
+                  "year": 2024,
+                  "value": 307000000,
+                  "change_percent": 2.33
+              }
+          ],
+          "consumption": [
+              {
+                  "year": 2022,
+                  "value": 285000000,
+                  "change_percent": 0
+              },
+              {
+                  "year": 2023,
+                  "value": 299000000,
+                  "change_percent": 4.91
+              },
+              {
+                  "year": 2024,
+                  "value": 306000000,
+                  "change_percent": 2.34
+              }
+          ]
+      },
+      "geography": [
+          {
+              "country": "Белоруссия",
+              "country_code": "BY",
+              "share_percent": 0.32746281498090235
+          },
+          {
+              "country": "Китай",
+              "country_code": "CN",
+              "share_percent": 0.2827462814980902
+          },
+          {
+              "country": "Германия",
+              "country_code": "DE",
+              "share_percent": 0.13537823780161906
+          },
+          {
+              "country": "Турция",
+              "country_code": "TR",
+              "share_percent": 0.06025537406630079
+          },
+          {
+              "country": "Финляндия",
+              "country_code": "FI",
+              "share_percent": 0.0331927624460638
+          },
+          {
+              "country": "Греция",
+              "country_code": "GR",
+              "share_percent": 0.030471509952940255
+          },
+          {
+              "country": "Швейцария",
+              "country_code": "CH",
+              "share_percent": 0.02084120921380245
+          },
+          {
+              "country": "Испания",
+              "country_code": "ES",
+              "share_percent": 0.016317738003676134
+          },
+          {
+              "country": "Словакия",
+              "country_code": "SK",
+              "share_percent": 0.016102644992243616
+          },
+          {
+              "country": "Швеция",
+              "country_code": "SE",
+              "share_percent": 0.01294794749123333
+          },
+          {
+              "country": "Эстония",
+              "country_code": "EE",
+              "share_percent": 0.009816062885374979
+          },
+          {
+              "country": "Южная Корея",
+              "country_code": "KR",
+              "share_percent": 0.009767178110049407
+          },
+          {
+              "country": "Италия",
+              "country_code": "IT",
+              "share_percent": 0.008313670790369048
+          },
+          {
+              "country": "Украина",
+              "country_code": "UA",
+              "share_percent": 0.0060845250355229365
+          },
+          {
+              "country": "Польша",
+              "country_code": "PL",
+              "share_percent": 0.005791216383569501
+          },
+          {
+              "country": "Сербия",
+              "country_code": "RS",
+              "share_percent": 0.00521111704970604
+          },
+          {
+              "country": "Литва",
+              "country_code": "LT",
+              "share_percent": 0.00306344592040255
+          },
+          {
+              "country": "Дания",
+              "country_code": "DK",
+              "share_percent": 0.002574598167146824
+          },
+          {
+              "country": "Болгария",
+              "country_code": "BG",
+              "share_percent": 0.002496382526625908
+          },
+          {
+              "country": "Франция",
+              "country_code": "FR",
+              "share_percent": 0.0021965559046290624
+          },
+          {
+              "country": "Бельгия",
+              "country_code": "BE",
+              "share_percent": 0.00214115315926008
+          },
+          {
+              "country": "Чехия",
+              "country_code": "CZ",
+              "share_percent": 0.0019325781178709703
+          },
+          {
+              "country": "Канада",
+              "country_code": "CA",
+              "share_percent": 0.0018250316121547108
+          },
+          {
+              "country": "Южная Африка",
+              "country_code": "ZA",
+              "share_percent": 0.0014958741249625218
+          },
+          {
+              "country": "Таиланд",
+              "country_code": "TH",
+              "share_percent": 0.001081983027206007
+          },
+          {
+              "country": "Нидерланды",
+              "country_code": "NL",
+              "share_percent": 0.00035197038234412273
+          },
+          {
+              "country": "Соединенные Штаты",
+              "country_code": "US",
+              "share_percent": 0.0001042875206945549
+          },
+          {
+              "country": "Норвегия",
+              "country_code": "NO",
+              "share_percent": 0.00003584883523875324
+          },
+          {
+              "country": "Армения",
+              "country_code": "AM",
+              "share_percent": 0
+          },
+          {
+              "country": "Казахстан",
+              "country_code": "KZ",
+              "share_percent": 0
+          },
+          {
+              "country": "Австрия",
+              "country_code": "AT",
+              "share_percent": 0
+          },
+          {
+              "country": "Босния и Герцеговина",
+              "country_code": "BA",
+              "share_percent": 0
+          },
+          {
+              "country": "Венгрия",
+              "country_code": "HU",
+              "share_percent": 0
+          },
+          {
+              "country": "Япония",
+              "country_code": "JP",
+              "share_percent": 0
+          },
+          {
+              "country": "Латвия",
+              "country_code": "LV",
+              "share_percent": 0
+          },
+          {
+              "country": "Люксембург",
+              "country_code": "LU",
+              "share_percent": 0
+          },
+          {
+              "country": "Тайвань",
+              "country_code": "TW",
+              "share_percent": 0
+          },
+          {
+              "country": "Индия",
+              "country_code": "IN",
+              "share_percent": 0
+          },
+          {
+              "country": "Вьетнам",
+              "country_code": "VN",
+              "share_percent": 0
+          },
+          {
+              "country": "Словения",
+              "country_code": "SI",
+              "share_percent": 0
+          },
+          {
+              "country": "Великобритания",
+              "country_code": "GB",
+              "share_percent": 0
+          }
+      ],
+      "prices": [
+          {
+              "country": "Белоруссия",
+              "country_code": "BY",
+              "price_usd": 100480000
+          },
+          {
+              "country": "Китай",
+              "country_code": "CN",
+              "price_usd": 86759000
+          },
+          {
+              "country": "Германия",
+              "country_code": "DE",
+              "price_usd": 41540000
+          },
+          {
+              "country": "Турция",
+              "country_code": "TR",
+              "price_usd": 18489000
+          },
+          {
+              "country": "Финляндия",
+              "country_code": "FI",
+              "price_usd": 10185000
+          },
+          {
+              "country": "Греция",
+              "country_code": "GR",
+              "price_usd": 9350000
+          },
+          {
+              "country": "Швейцария",
+              "country_code": "CH",
+              "price_usd": 6395000
+          },
+          {
+              "country": "Испания",
+              "country_code": "ES",
+              "price_usd": 5007000
+          },
+          {
+              "country": "Словакия",
+              "country_code": "SK",
+              "price_usd": 4941000
+          },
+          {
+              "country": "Швеция",
+              "country_code": "SE",
+              "price_usd": 3973000
+          },
+          {
+              "country": "Эстония",
+              "country_code": "EE",
+              "price_usd": 3012000
+          },
+          {
+              "country": "Южная Корея",
+              "country_code": "KR",
+              "price_usd": 2997000
+          },
+          {
+              "country": "Италия",
+              "country_code": "IT",
+              "price_usd": 2551000
+          },
+          {
+              "country": "Украина",
+              "country_code": "UA",
+              "price_usd": 1867000
+          },
+          {
+              "country": "Польша",
+              "country_code": "PL",
+              "price_usd": 1777000
+          },
+          {
+              "country": "Сербия",
+              "country_code": "RS",
+              "price_usd": 1599000
+          },
+          {
+              "country": "Литва",
+              "country_code": "LT",
+              "price_usd": 940000
+          },
+          {
+              "country": "Дания",
+              "country_code": "DK",
+              "price_usd": 790000
+          },
+          {
+              "country": "Болгария",
+              "country_code": "BG",
+              "price_usd": 766000
+          },
+          {
+              "country": "Франция",
+              "country_code": "FR",
+              "price_usd": 674000
+          },
+          {
+              "country": "Бельгия",
+              "country_code": "BE",
+              "price_usd": 657000
+          },
+          {
+              "country": "Чехия",
+              "country_code": "CZ",
+              "price_usd": 593000
+          },
+          {
+              "country": "Канада",
+              "country_code": "CA",
+              "price_usd": 560000
+          },
+          {
+              "country": "Южная Африка",
+              "country_code": "ZA",
+              "price_usd": 459000
+          },
+          {
+              "country": "Таиланд",
+              "country_code": "TH",
+              "price_usd": 332000
+          },
+          {
+              "country": "Нидерланды",
+              "country_code": "NL",
+              "price_usd": 108000
+          },
+          {
+              "country": "Соединенные Штаты",
+              "country_code": "US",
+              "price_usd": 32000
+          },
+          {
+              "country": "Норвегия",
+              "country_code": "NO",
+              "price_usd": 11000
+          },
+          {
+              "country": "Армения",
+              "country_code": "AM",
+              "price_usd": 0
+          },
+          {
+              "country": "Казахстан",
+              "country_code": "KZ",
+              "price_usd": 0
+          },
+          {
+              "country": "Австрия",
+              "country_code": "AT",
+              "price_usd": 0
+          },
+          {
+              "country": "Босния и Герцеговина",
+              "country_code": "BA",
+              "price_usd": 0
+          },
+          {
+              "country": "Венгрия",
+              "country_code": "HU",
+              "price_usd": 0
+          },
+          {
+              "country": "Япония",
+              "country_code": "JP",
+              "price_usd": 0
+          },
+          {
+              "country": "Латвия",
+              "country_code": "LV",
+              "price_usd": 0
+          },
+          {
+              "country": "Люксембург",
+              "country_code": "LU",
+              "price_usd": 0
+          },
+          {
+              "country": "Тайвань",
+              "country_code": "TW",
+              "price_usd": 0
+          },
+          {
+              "country": "Индия",
+              "country_code": "IN",
+              "price_usd": 0
+          },
+          {
+              "country": "Вьетнам",
+              "country_code": "VN",
+              "price_usd": 0
+          },
+          {
+              "country": "Словения",
+              "country_code": "SI",
+              "price_usd": 0
+          },
+          {
+              "country": "Великобритания",
+              "country_code": "GB",
+              "price_usd": 0
+          }
+      ],
+      "recommendations": [
+          {
+              "name": "Мера 1: Повышение ставки таможенного тарифа",
+              "reasons": [
+                  "Доля НС в текущем периоде: 32.17%",
+                  "Доля НС в предыдущем периоде: 33.10%",
+                  "Сценарий 4.2: доля НС < 30% или снижается / нет подтверждения роста",
+                  "Потенциал повышения тарифа: True",
+                  "Производство >= потребления: True",
+                  "Доля НС снижается: True",
+                  "Шаг 4.2.1.1: Условия выполнены → Мера 1",
+                  "Проверяем возможность нетарифных мер (Мера 5 может идти вместе с Мерой 1)",
+                  "Раздел II: анализ нетарифных мер",
+                  "Производство >= потребления: True",
+                  "Товар входит в перечни ПП №1875 → Мера 4",
+                  "Условия для Меры 5: сертификация=Да, не в списке исключений=Да, импорт растёт=Да, производство растёт=Да",
+                  "Все условия выполнены → Мера 5"
+              ],
+              "similar_cases": []
+          },
+          {
+              "name": "Мера 4: Запрет на допуск товара из НС для целей осуществления госзакупок",
+              "reasons": [
+                  "Доля НС в текущем периоде: 32.17%",
+                  "Доля НС в предыдущем периоде: 33.10%",
+                  "Сценарий 4.2: доля НС < 30% или снижается / нет подтверждения роста",
+                  "Потенциал повышения тарифа: True",
+                  "Производство >= потребления: True",
+                  "Доля НС снижается: True",
+                  "Шаг 4.2.1.1: Условия выполнены → Мера 1",
+                  "Проверяем возможность нетарифных мер (Мера 5 может идти вместе с Мерой 1)",
+                  "Раздел II: анализ нетарифных мер",
+                  "Производство >= потребления: True",
+                  "Товар входит в перечни ПП №1875 → Мера 4",
+                  "Условия для Меры 5: сертификация=Да, не в списке исключений=Да, импорт растёт=Да, производство растёт=Да",
+                  "Все условия выполнены → Мера 5"
+              ],
+              "similar_cases": []
+          },
+          {
+              "name": "Мера 5: Введение обязательной сертификации",
+              "reasons": [
+                  "Доля НС в текущем периоде: 32.17%",
+                  "Доля НС в предыдущем периоде: 33.10%",
+                  "Сценарий 4.2: доля НС < 30% или снижается / нет подтверждения роста",
+                  "Потенциал повышения тарифа: True",
+                  "Производство >= потребления: True",
+                  "Доля НС снижается: True",
+                  "Шаг 4.2.1.1: Условия выполнены → Мера 1",
+                  "Проверяем возможность нетарифных мер (Мера 5 может идти вместе с Мерой 1)",
+                  "Раздел II: анализ нетарифных мер",
+                  "Производство >= потребления: True",
+                  "Товар входит в перечни ПП №1875 → Мера 4",
+                  "Условия для Меры 5: сертификация=Да, не в списке исключений=Да, импорт растёт=Да, производство растёт=Да",
+                  "Все условия выполнены → Мера 5"
+              ],
+              "similar_cases": []
+          }
+      ],
+      "share_url": "https://hilogics-demo.vercel.app/share/1"
   }
 }
