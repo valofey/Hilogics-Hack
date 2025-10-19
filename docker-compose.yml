@@ -10,6 +10,7 @@ services:
     environment:
       - ENVIRONMENT=production
       - UI_BASE_URL=$UI_BASE_URL
+      - DADATA_API_KEY=$DADATA_API_KEY
     restart: unless-stopped
 
   frontend:
