@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { geoMercator, geoPath } from 'd3-geo';
-import { scaleSequential } from 'd3-scale';
-import { interpolateBlues } from 'd3-scale-chromatic';
+import { scaleLinear } from 'd3-scale';
 import countries from 'i18n-iso-countries';
 import type { LocaleData } from 'i18n-iso-countries';
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
@@ -9,6 +8,7 @@ import { Globe2 } from 'lucide-react';
 import { feature } from 'topojson-client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import type { ContractPriceItem, GeographyItem } from '@/types/dashboard';
 import { formatCurrency, formatPercent } from '@/lib/number';
 
@@ -51,6 +51,7 @@ function getNumericCountryCode(name: string): string | undefined {
 
 export function WorldMapCard({ geography, prices }: WorldMapCardProps) {
   const [hovered, setHovered] = useState<GeographyItem | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
 
   const priceMap = useMemo(() => new Map(prices.map((entry) => [entry.country, entry.price_usd])), [prices]);
 
@@ -78,6 +79,11 @@ export function WorldMapCard({ geography, prices }: WorldMapCardProps) {
       .filter((featureItem): featureItem is MapFeature => Boolean(featureItem));
   }, [geography]);
 
+  const shareByCountry = useMemo(
+    () => new Map(geography.map((item) => [item.country, item.share_percent])),
+    [geography]
+  );
+
   const maxShare = useMemo(
     () => (highlights.length ? Math.max(...highlights.map((item) => item.properties.share ?? 0)) : 0),
     [highlights]
@@ -85,132 +91,147 @@ export function WorldMapCard({ geography, prices }: WorldMapCardProps) {
 
   const colorScale = useMemo(() => {
     const upper = maxShare || 0.4;
-    return scaleSequential(interpolateBlues).domain([0, upper]);
+    return scaleLinear<string>().domain([0, upper]).range(['#f5f5f5', '#111111']);
   }, [maxShare]);
 
   const projection = useMemo(() => geoMercator().scale(120).translate([480 / 2, 280 / 1.75]), []);
   const pathGenerator = useMemo(() => geoPath(projection), [projection]);
 
   const sortedGeography = useMemo(
-    () => [...geography].sort((a, b) => b.share_percent - a.share_percent).slice(0, 5),
+    () => [...geography].sort((a, b) => b.share_percent - a.share_percent).slice(0, 6),
     [geography]
   );
 
-  const activeCountry = hovered ?? (sortedGeography.length ? sortedGeography[0] : null);
-  const activePrice = activeCountry ? priceMap.get(activeCountry.country) ?? null : null;
+  const activeCountry = hovered ?? sortedGeography[0] ?? null;
 
   return (
-    <Card className="relative overflow-hidden border border-slate-200 bg-white shadow-lg">
-      <div className="absolute inset-0 bg-gradient-to-br from-sky-50 via-white to-white" />
-      <CardHeader className="relative z-10 pb-3">
+    <Card className="border border-black bg-white">
+      <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900">
-          <Globe2 className="h-6 w-6 text-sky-500" />
-          География импорта
+          <Globe2 className="h-6 w-6 text-slate-900" />
+          География спроса
         </CardTitle>
         <p className="text-sm text-slate-600">
-          Интенсивность оттенка показывает долю страны в структуре импорта. Наведите курсор, чтобы увидеть подробности.
+          Отобразите топ стран по доле импорта: наведите курсор на территорию или выберите страну из списка, чтобы
+          увидеть долю и среднюю цену контракта.
         </p>
       </CardHeader>
-      <CardContent className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <div className="relative rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 shadow-inner">
+      <CardContent className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+        <div className="relative border border-black bg-white p-4">
           <svg viewBox="0 0 480 280" className="h-full w-full">
-            <defs>
-              <filter id="highlight-shadow" x="-40%" y="-40%" width="180%" height="180%">
-                <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="rgba(15,23,42,0.25)" />
-              </filter>
-            </defs>
-            <g>
+            <g className="fill-slate-100 stroke-slate-300 stroke-[0.3]">
               {WORLD_FEATURES.features.map((featureItem, index) => (
                 <path
                   key={`world-default-${featureItem.id ?? index}`}
                   d={pathGenerator(featureItem as MapFeature) ?? undefined}
-                  fill="#e2e8f0"
-                  stroke="#cbd5f5"
-                  strokeWidth={0.4}
-                  opacity={0.6}
+                  opacity={0.75}
                 />
               ))}
             </g>
-            <g>
-              {highlights.map((featureItem, index) => {
-                const share = featureItem.properties.share ?? 0;
-                const fillColor = colorScale(share) ?? '#1d4ed8';
+            <g className="cursor-pointer">
+              {WORLD_FEATURES.features.map((featureItem, index) => {
+                const name = featureItem.properties?.name as string | undefined;
+                const share = name ? shareByCountry.get(name) ?? 0 : 0;
+                const color = colorScale(Math.min(maxShare || 0.4, share));
+                const mappedFeature = highlights.find((item) => item.id === featureItem.id);
+                const isActive = activeCountry ? activeCountry.country === name : false;
+
                 return (
                   <path
                     key={`highlight-${featureItem.id ?? index}`}
-                    d={pathGenerator(featureItem) ?? undefined}
-                    fill={fillColor}
-                    stroke="#1d4ed8"
-                    strokeWidth={1.2}
-                    filter="url(#highlight-shadow)"
-                    opacity={hovered ? (hovered.country === featureItem.properties.name ? 1 : 0.45) : 0.95}
-                    onMouseEnter={() =>
-                      featureItem.properties.name
-                        ? setHovered({
-                            country: featureItem.properties.name,
-                            share_percent: featureItem.properties.share ?? 0
-                          })
-                        : undefined
-                    }
-                    onMouseLeave={() => setHovered(null)}
+                    d={pathGenerator(mappedFeature ?? (featureItem as MapFeature)) ?? undefined}
+                    fill={color}
+                    stroke={isActive ? '#141414' : '#525252'}
+                    strokeWidth={isActive ? 1.6 : 0.6}
+                    opacity={activeCountry ? (isActive ? 1 : 0.25) : 0.85}
+                    onMouseEnter={(event) => {
+                      if (!name) {
+                        return;
+                      }
+                      const share_percent = shareByCountry.get(name) ?? 0;
+                      setHovered({ country: name, share_percent });
+                      const svg = event.currentTarget.ownerSVGElement as SVGSVGElement;
+                      const { left, top } = svg.getBoundingClientRect();
+                      setTooltipPosition({
+                        x: event.clientX - left,
+                        y: event.clientY - top
+                      });
+                    }}
+                    onMouseMove={(event) => {
+                      const svg = event.currentTarget.ownerSVGElement as SVGSVGElement;
+                      const { left, top } = svg.getBoundingClientRect();
+                      setTooltipPosition({
+                        x: event.clientX - left,
+                        y: event.clientY - top
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setHovered(null);
+                      setTooltipPosition(null);
+                    }}
                   />
                 );
               })}
             </g>
           </svg>
-        </div>
-        <div className="flex flex-col gap-4">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Лидирующие страны</p>
-            <div className="mt-3 space-y-3">
-              {sortedGeography.map((item) => {
-                const price = priceMap.get(item.country);
-                const isActive = hovered?.country === item.country;
-                return (
-                  <button
-                    key={item.country}
-                    type="button"
-                    onMouseEnter={() => setHovered(item)}
-                    onMouseLeave={() => setHovered(null)}
-                    className={`w-full rounded-xl border px-4 py-3 text-left transition ${
-                      isActive
-                        ? 'border-sky-200 bg-sky-50 shadow'
-                        : 'border-transparent bg-white hover:border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">{item.country}</p>
-                        <p className="text-xs text-slate-500">Доля {formatPercent(item.share_percent)}</p>
-                      </div>
-                      <div className="text-right text-xs text-slate-500">
-                        <span className="block text-slate-400">СКЦ</span>
-                        <span className="font-semibold text-slate-800">
-                          {price ? formatCurrency(price) : '—'}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
           {activeCountry ? (
-            <div className="rounded-2xl border border-sky-200 bg-sky-50/70 p-4 text-slate-800 shadow-sm">
-              <p className="text-xs uppercase tracking-wide text-sky-600">Детали страны</p>
-              <p className="mt-1 text-lg font-semibold">{activeCountry.country}</p>
-              <dl className="mt-3 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-slate-500">Доля импорта</dt>
-                  <dd className="font-medium">{formatPercent(activeCountry.share_percent)}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-slate-500">Средняя цена</dt>
-                  <dd className="font-medium">{activePrice ? formatCurrency(activePrice) : '—'}</dd>
-                </div>
-              </dl>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-700">
+              <span className="font-semibold text-slate-900">{activeCountry.country}</span>
+              <span>Доля импорта: {formatPercent(activeCountry.share_percent)}</span>
+              <span>
+                Средняя цена:{' '}
+                {priceMap.has(activeCountry.country) ? formatCurrency(priceMap.get(activeCountry.country) ?? 0) : '—'}
+              </span>
             </div>
           ) : null}
+          {activeCountry && tooltipPosition ? (
+            <div
+              className="pointer-events-none absolute rounded border border-black bg-white px-3 py-2 text-xs text-slate-700 shadow-sm"
+              style={{ left: tooltipPosition.x + 12, top: tooltipPosition.y + 12 }}
+            >
+              <p className="font-semibold text-slate-900">{activeCountry.country}</p>
+              <p>Доля импорта: {formatPercent(activeCountry.share_percent)}</p>
+              <p>
+                Средняя контрактная цена:{' '}
+                {priceMap.has(activeCountry.country) ? formatCurrency(priceMap.get(activeCountry.country) ?? 0) : '—'}
+              </p>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Топ стран по доле импорта</p>
+          <div className="space-y-2">
+            {sortedGeography.map((item) => {
+              const price = priceMap.get(item.country);
+              const isActive = activeCountry?.country === item.country;
+              return (
+                <button
+                  key={item.country}
+                  type="button"
+                  onMouseEnter={() => setHovered(item)}
+                  onMouseLeave={() => setHovered(null)}
+                  className={cn(
+                    'w-full border border-black px-4 py-3 text-left transition',
+                    isActive ? 'bg-black/5' : 'bg-white hover:bg-black/5'
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{item.country}</p>
+                      <p className="text-xs text-slate-500">Доля импорта {formatPercent(item.share_percent)}</p>
+                    </div>
+                    <div className="text-right text-xs text-slate-500">
+                      <span className="block text-slate-400">Контрактная цена</span>
+                      <span className="font-semibold text-slate-800">
+                        {price ? formatCurrency(price) : '—'}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </CardContent>
     </Card>

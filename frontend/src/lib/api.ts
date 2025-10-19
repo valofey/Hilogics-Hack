@@ -1,4 +1,9 @@
-﻿import type { DashboardRequest, DashboardResponse } from '@/types/dashboard';
+import type {
+  DashboardRequest,
+  DashboardResponse,
+  TnvedItem,
+  TnvedListResponse
+} from '@/types/dashboard';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -43,9 +48,15 @@ export async function retrieveDashboard(uid: string | number): Promise<Dashboard
   return handleResponse<DashboardResponse>(response);
 }
 
+export async function getTnvedList(): Promise<TnvedItem[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/tnved`);
+  const data = await handleResponse<TnvedListResponse>(response);
+  return data.items;
+}
+
 export const api = {
   createDashboard,
-  retrieveDashboard
+  retrieveDashboard,
+  getTnvedList
 };
-
 

@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 
 import { LandingHero } from "@/components/landing/LandingHero";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import { DashboardView } from "@/components/dashboard/DashboardView";
 import { api } from "@/lib/api";
 import type { DashboardData, OrganizationInfo } from "@/types/dashboard";
@@ -13,9 +14,11 @@ type ProductFormValues = {
 };
 
 const fallbackOrganization: OrganizationInfo = {
-  name: "Организация не указана",
+  name: "АО «Компания»",
   inn: null
 };
+
+const DEFAULT_PRODUCT_NAME = "Товар для проверки";
 
 function App() {
   const [view, setView] = useState<ViewState>("landing");
@@ -29,8 +32,10 @@ function App() {
     setError(null);
     try {
       const organization = dashboardData?.organization ?? fallbackOrganization;
+      const sanitizedCode = values.tnVedCode.replace(/\s+/g, "");
+      const productName = values.productName.trim() || DEFAULT_PRODUCT_NAME;
       const response = await api.createDashboard({
-        product: { name: values.productName, code: values.tnVedCode },
+        product: { name: productName, code: sanitizedCode },
         organization
       });
       setDashboardData(response.dashboard);
@@ -62,13 +67,13 @@ function App() {
     [dashboardData]
   );
 
-  if (view === "landing" || !dashboardData) {
-    return <LandingHero loading={loading} onSubmit={handleCreateDashboard} error={error} />;
-  }
+  const isLanding = view === "landing" || !dashboardData;
 
-  return (
+  const mainContent = isLanding ? (
+    <LandingHero loading={loading} onSubmit={handleCreateDashboard} error={error} />
+  ) : (
     <DashboardView
-      data={dashboardData}
+      data={dashboardData!}
       onRequestOrganizationUpdate={handleOrganizationUpdate}
       processing={processing}
       onReset={() => {
@@ -77,7 +82,13 @@ function App() {
       }}
     />
   );
+
+  return (
+    <div className="flex min-h-screen flex-col bg-white text-slate-900">
+      <SiteHeader />
+      <main className="flex-1 bg-white">{mainContent}</main>
+    </div>
+  );
 }
 
 export default App;
-

@@ -54,3 +54,12 @@ export type DashboardRequest = {
   product: ProductInfo;
   organization: OrganizationInfo;
 };
+
+export type TnvedItem = {
+  code: string;
+  description: string;
+};
+
+export type TnvedListResponse = {
+  items: TnvedItem[];
+};

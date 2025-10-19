@@ -11,33 +11,30 @@ type NextStepsCardProps = {
 };
 
 export function NextStepsCard({ onAction, loading, shareLink, organizationReady }: NextStepsCardProps) {
-  const linkButtonLabel = organizationReady ? 'Скопировать ссылку' : 'Получить ссылку';
+  const linkButtonLabel = organizationReady ? 'Скопировать публичную ссылку' : 'Получить ссылку после заполнения';
 
   return (
-    <Card className="flex h-full flex-col border border-slate-200 bg-white shadow-lg">
+    <Card className="flex h-full flex-col border border-black bg-white">
       <CardHeader className="space-y-3">
         <CardTitle className="flex items-start justify-between text-lg font-semibold text-slate-900">
-          <span>Следующие шаги</span>
-          <Badge className="bg-sky-100 text-sky-700">MOSPROM</Badge>
+          <span>Возможные шаги</span>
+          <Badge className="border border-black bg-white text-black">MOSPROM</Badge>
         </CardTitle>
         <p className="flex items-center gap-2 text-sm text-slate-600">
-          <PhoneCall className="h-4 w-4 text-sky-500" />
-          Свяжитесь с экспертом MOSPROM, чтобы обсудить рекомендации и план действий.
+          <PhoneCall className="h-4 w-4 text-slate-900" />
+          Эксперты MOSPROM помогут уточнить данные и подобрать инструменты поддержки. Подготовьте PDF или ссылку, прежде
+          чем обращаться в команду.
         </p>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-4">
+      <CardContent className="flex flex-1 flex-col gap-3">
         <div className="grid gap-3 sm:grid-cols-1">
-          <Button
-            className="h-12 gap-2 rounded-xl bg-sky-600 text-base font-semibold text-white shadow-lg transition hover:bg-sky-700"
-            onClick={() => onAction('pdf')}
-            disabled={loading}
-          >
+          <Button className="h-12 gap-2 normal-case" onClick={() => onAction('pdf')} disabled={loading}>
             <FileText className="h-5 w-5" />
-            Скачать PDF-отчёт
+            Сформировать PDF-отчёт
           </Button>
           <Button
             variant="secondary"
-            className="h-12 gap-2 rounded-xl border border-slate-200 bg-white text-base font-semibold text-slate-700 shadow transition hover:bg-slate-50"
+            className="h-12 gap-2 normal-case"
             onClick={() => onAction('link')}
             disabled={loading}
           >
@@ -47,14 +44,15 @@ export function NextStepsCard({ onAction, loading, shareLink, organizationReady 
         </div>
 
         {shareLink ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-xs text-slate-600">
-            <p className="mb-1 font-semibold text-slate-700">Ссылка на веб-версию отчёта</p>
+          <div className="border border-black bg-white p-3 text-xs text-slate-600">
+            <p className="mb-1 font-semibold text-slate-700">Готовая ссылка на дашборд</p>
             <p className="truncate">{shareLink}</p>
           </div>
         ) : null}
 
         <p className="mt-auto text-xs text-slate-500">
-          После сохранения данных организации можно повторно скачивать PDF и мгновенно копировать ссылку без заполнения формы.
+          Для окончательного отчёта уточните организацию и ИНН — эти данные попадут в документ и помогут ускорить
+          обработку заявки на поддержку.
         </p>
       </CardContent>
     </Card>

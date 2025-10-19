@@ -33,7 +33,7 @@ export function MetricTrendCard({ title, subtitle, data, domain, color, footer }
     }
     const record = payload[0].payload;
     return (
-      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow">
+      <div className="border border-black bg-white px-3 py-2 text-sm text-slate-700">
         <p className="text-xs font-medium text-slate-500">{`Год ${label}`}</p>
         <p className="font-semibold text-slate-900">{formatNumber(record.value)}</p>
         <p className="text-xs text-slate-500">{`Изменение: ${formatPercent(record.change_percent)}`}</p>
@@ -42,13 +42,13 @@ export function MetricTrendCard({ title, subtitle, data, domain, color, footer }
   };
 
   return (
-    <Card className="h-full border border-slate-200 bg-white shadow-lg">
+    <Card className="h-full border border-black bg-white">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold text-slate-900">{title}</CardTitle>
         {subtitle ? <p className="text-sm text-slate-500">{subtitle}</p> : null}
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="h-48 w-full">
+        <div className="h-40 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 32, right: 24, bottom: 8, left: 12 }}>
               <defs>
@@ -82,3 +82,4 @@ export function MetricTrendCard({ title, subtitle, data, domain, color, footer }
     </Card>
   );
 }
+
