@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from config import settings
 from routes.dashboard_routes import router as dashboard_router
+from routes.source_routes import router as source_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -18,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(dashboard_router, prefix="/api/v1", tags=["dashboard"])
+app.include_router(source_router, prefix="/api/v1", tags=["source"])
 
 
 @app.get("/")
